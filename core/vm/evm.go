@@ -24,6 +24,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/log"
+	"syscall"
+	"encoding/json"
+	"bufio"
+	"os"
 )
 
 // emptyCodeHash is used by create to ensure deployment is disallowed to already
@@ -111,17 +117,33 @@ type EVM struct {
 	// available gas is calculated in gasCall* according to the 63/64 rule and later
 	// applied in opCall*.
 	callGasTemp uint64
+
+	// for tx date export
+	txEnc *json.Encoder
+	bufTxFile *bufio.Writer
+	txFile *os.File
 }
 
 // NewEVM returns a new EVM. The returned EVM is not thread safe and should
 // only ever be used *once*.
-func NewEVM(ctx Context, statedb StateDB, chainConfig *params.ChainConfig, vmConfig Config) *EVM {
+func NewEVM(ctx Context, statedb StateDB, chainConfig *params.ChainConfig, vmConfig Config, opt ...interface{}) *EVM {
 	evm := &EVM{
 		Context:     ctx,
 		StateDB:     statedb,
 		vmConfig:    vmConfig,
 		chainConfig: chainConfig,
 		chainRules:  chainConfig.Rules(ctx.BlockNumber),
+	}
+
+	if opt != nil {
+		for _, param := range opt {
+			switch concrete := param.(type) {
+			case *json.Encoder:
+				evm.txEnc = concrete
+			case *bufio.Writer:
+				evm.bufTxFile = concrete
+			}
+		}
 	}
 
 	evm.interpreter = NewInterpreter(evm, vmConfig)
@@ -138,7 +160,7 @@ func (evm *EVM) Cancel() {
 // parameters. It also handles any necessary value transfer required and takes
 // the necessary steps to create accounts and reverses the state in case of an
 // execution error or failed value transfer.
-func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas uint64, value *big.Int) (ret []byte, leftOverGas uint64, err error) {
+func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas uint64, value *big.Int, external ...bool) (ret []byte, leftOverGas uint64, err error) {
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
 		return nil, gas, nil
 	}
@@ -188,6 +210,13 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 			evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
 		}()
 	}
+
+	if err := evm.txEnc.Encode(map[string]interface{}{"method": "Call",  "external": external != nil, "from": caller.Address(), "to": addr, "value": value, "data": hexutil.Bytes(input)}); err != nil {
+		log.Error("Unable to write to tx_data")
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		return nil, gas, nil
+	}
+	evm.bufTxFile.Flush()
 	ret, err = run(evm, contract, input)
 
 	// When an error was returned by the EVM or when setting the creation code
@@ -233,6 +262,12 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 	contract := NewContract(caller, to, value, gas)
 	contract.SetCallCode(&addr, evm.StateDB.GetCodeHash(addr), evm.StateDB.GetCode(addr))
 
+	if err := evm.txEnc.Encode(map[string]interface{}{"method": "CallCode",  "external": false, "from": caller.Address(), "to": addr, "value": value, "data": hexutil.Bytes(input)}); err != nil {
+		log.Error("Unable to write to tx_data")
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		return nil, gas, nil
+	}
+	evm.bufTxFile.Flush()
 	ret, err = run(evm, contract, input)
 	if err != nil {
 		evm.StateDB.RevertToSnapshot(snapshot)
@@ -266,6 +301,12 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []by
 	contract := NewContract(caller, to, nil, gas).AsDelegate()
 	contract.SetCallCode(&addr, evm.StateDB.GetCodeHash(addr), evm.StateDB.GetCode(addr))
 
+	if err := evm.txEnc.Encode(map[string]interface{}{"method": "DelegateCall", "external": false,  "from": caller.Address(), "to": addr, "value": 0, "data": hexutil.Bytes(input)}); err != nil {
+		log.Error("Unable to write to tx_data")
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		return nil, gas, nil
+	}
+	evm.bufTxFile.Flush()
 	ret, err = run(evm, contract, input)
 	if err != nil {
 		evm.StateDB.RevertToSnapshot(snapshot)
@@ -306,6 +347,12 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 	contract := NewContract(caller, to, new(big.Int), gas)
 	contract.SetCallCode(&addr, evm.StateDB.GetCodeHash(addr), evm.StateDB.GetCode(addr))
 
+	if err := evm.txEnc.Encode(map[string]interface{}{"method": "StaticCall",  "external": false, "from": caller.Address(), "to": addr, "value": 0, "data": hexutil.Bytes(input)}); err != nil {
+		log.Error("Unable to write to tx_data")
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		return nil, gas, nil
+	}
+	evm.bufTxFile.Flush()
 	// When an error was returned by the EVM or when setting the creation code
 	// above we revert to the snapshot and consume any gas remaining. Additionally
 	// when we're in Homestead this also counts for code storage gas errors.
@@ -320,7 +367,7 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 }
 
 // Create creates a new contract using code as deployment code.
-func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
+func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.Int, external ...bool) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
 
 	// Depth check execution. Fail if we're trying to execute above the
 	// limit.
@@ -362,6 +409,12 @@ func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *big.I
 	}
 	start := time.Now()
 
+	if err := evm.txEnc.Encode(map[string]interface{}{"method": "Create", "external": external != nil, "from": caller.Address(), "to": nil, "value": value, "data": hexutil.Bytes(code)}); err != nil {
+		log.Error("Unable to write to tx_data")
+		syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		return nil, common.Address{}, gas, ErrDepth
+	}
+	evm.bufTxFile.Flush()
 	ret, err = run(evm, contract, nil)
 
 	// check whether the max code size has been exceeded

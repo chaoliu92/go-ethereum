@@ -44,6 +44,9 @@ import (
 	"github.com/ethereum/go-ethereum/trie"
 	"github.com/hashicorp/golang-lru"
 	"gopkg.in/karalabe/cookiejar.v2/collections/prque"
+	"os"
+	"encoding/json"
+	"bufio"
 )
 
 var (
@@ -131,6 +134,10 @@ type BlockChain struct {
 	badBlocks *lru.Cache // Bad block cache
 }
 
+var TxEnc *json.Encoder
+var TxFile *os.File
+var BufTxFile *bufio.Writer
+
 // NewBlockChain returns a fully initialised block chain using information
 // available in the database. It initialises the default Ethereum Validator and
 // Processor.
@@ -190,6 +197,19 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *par
 			}
 		}
 	}
+
+	// Log transaction information into file
+	fmt.Println("Write to file tx_data")
+	TxFile, err = os.Create("tx_data")
+	if err != nil {
+		return nil, err
+	}
+	BufTxFile = bufio.NewWriter(TxFile)
+	TxEnc = json.NewEncoder(BufTxFile)
+
+	BufTxFile.WriteString("Recording Tx Information\n")
+	BufTxFile.Flush()
+
 	// Take ownership of this particular state
 	go bc.update()
 	return bc, nil
@@ -702,7 +722,7 @@ func (bc *BlockChain) procFutureBlocks() {
 type WriteStatus byte
 
 const (
-	NonStatTy WriteStatus = iota
+	NonStatTy   WriteStatus = iota
 	CanonStatTy
 	SideStatTy
 )
@@ -1390,6 +1410,7 @@ func (bc *BlockChain) update() {
 		case <-futureTimer.C:
 			bc.procFutureBlocks()
 		case <-bc.quit:
+			TxFile.Close()
 			return
 		}
 	}
