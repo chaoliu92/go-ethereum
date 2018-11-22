@@ -186,7 +186,7 @@ func testCLISwarmUp(toEncrypt bool, t *testing.T) {
 		}
 		// this is disabled since it takes 60s due to netstore timeout
 		// if res.StatusCode != 404 {
-		// 	t.Fatalf("expected HTTP status 404, got %s", res.Status)
+		// 	t.Fatalf("expected HTTP status 404, got %s", res.StatusCode)
 		// }
 	}
 }

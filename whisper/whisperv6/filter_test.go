@@ -149,7 +149,7 @@ func TestInstallSymKeyGeneratesHash(t *testing.T) {
 	_, err := filters.Install(filter)
 
 	if err != nil {
-		t.Fatalf("Error installing the filter: %s", err)
+		t.Fatalf("ErrorMsg installing the filter: %s", err)
 	}
 
 	for i, b := range filter.SymKeyHash {
@@ -179,18 +179,18 @@ func TestInstallIdenticalFilters(t *testing.T) {
 	_, err := filters.Install(filter1)
 
 	if err != nil {
-		t.Fatalf("Error installing the first filter with seed %d: %s", seed, err)
+		t.Fatalf("ErrorMsg installing the first filter with seed %d: %s", seed, err)
 	}
 
 	_, err = filters.Install(filter2)
 
 	if err != nil {
-		t.Fatalf("Error installing the second filter with seed %d: %s", seed, err)
+		t.Fatalf("ErrorMsg installing the second filter with seed %d: %s", seed, err)
 	}
 
 	params, err := generateMessageParams()
 	if err != nil {
-		t.Fatalf("Error generating message parameters with seed %d: %s", seed, err)
+		t.Fatalf("ErrorMsg generating message parameters with seed %d: %s", seed, err)
 	}
 
 	params.KeySym = filter1.KeySym
@@ -255,7 +255,7 @@ func TestInstallFilterWithSymAndAsymKeys(t *testing.T) {
 	_, err = filters.Install(filter)
 
 	if err == nil {
-		t.Fatalf("Error detecting that a filter had both an asymmetric and symmetric key, with seed %d", seed)
+		t.Fatalf("ErrorMsg detecting that a filter had both an asymmetric and symmetric key, with seed %d", seed)
 	}
 }
 

@@ -164,17 +164,17 @@ func TestConfigFileOverrides(t *testing.T) {
 	//create a TOML string
 	out, err := tomlSettings.Marshal(&defaultConf)
 	if err != nil {
-		t.Fatalf("Error creating TOML file in TestFileOverride: %v", err)
+		t.Fatalf("ErrorMsg creating TOML file in TestFileOverride: %v", err)
 	}
 	//create file
 	f, err := ioutil.TempFile("", "testconfig.toml")
 	if err != nil {
-		t.Fatalf("Error writing TOML file in TestFileOverride: %v", err)
+		t.Fatalf("ErrorMsg writing TOML file in TestFileOverride: %v", err)
 	}
 	//write file
 	_, err = f.WriteString(string(out))
 	if err != nil {
-		t.Fatalf("Error writing TOML file in TestFileOverride: %v", err)
+		t.Fatalf("ErrorMsg writing TOML file in TestFileOverride: %v", err)
 	}
 	f.Sync()
 
@@ -375,19 +375,19 @@ func TestConfigCmdLineOverridesFile(t *testing.T) {
 	//create a TOML file
 	out, err := tomlSettings.Marshal(&defaultConf)
 	if err != nil {
-		t.Fatalf("Error creating TOML file in TestFileOverride: %v", err)
+		t.Fatalf("ErrorMsg creating TOML file in TestFileOverride: %v", err)
 	}
 	//write file
 	fname := "testconfig.toml"
 	f, err := ioutil.TempFile("", fname)
 	if err != nil {
-		t.Fatalf("Error writing TOML file in TestFileOverride: %v", err)
+		t.Fatalf("ErrorMsg writing TOML file in TestFileOverride: %v", err)
 	}
 	defer os.Remove(fname)
 	//write file
 	_, err = f.WriteString(string(out))
 	if err != nil {
-		t.Fatalf("Error writing TOML file in TestFileOverride: %v", err)
+		t.Fatalf("ErrorMsg writing TOML file in TestFileOverride: %v", err)
 	}
 	f.Sync()
 

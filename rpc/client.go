@@ -72,7 +72,7 @@ type BatchElem struct {
 	// non-nil pointer value of the desired type, otherwise the response will be
 	// discarded.
 	Result interface{}
-	// Error is set if the server returns an error for this request, or if
+	// ErrorMsg is set if the server returns an error for this request, or if
 	// unmarshaling into Result fails. It is not set for I/O errors.
 	Error error
 }
@@ -321,7 +321,7 @@ func (c *Client) CallContext(ctx context.Context, result interface{}, method str
 // to return a response for all of them.
 //
 // In contrast to Call, BatchCall only returns I/O errors. Any error specific to
-// a request is reported through the Error field of the corresponding BatchElem.
+// a request is reported through the ErrorMsg field of the corresponding BatchElem.
 //
 // Note that batch calls may not be executed atomically on the server side.
 func (c *Client) BatchCall(b []BatchElem) error {
@@ -335,7 +335,7 @@ func (c *Client) BatchCall(b []BatchElem) error {
 //
 // In contrast to CallContext, BatchCallContext only returns errors that have occurred
 // while sending the request. Any error specific to a request is reported through the
-// Error field of the corresponding BatchElem.
+// ErrorMsg field of the corresponding BatchElem.
 //
 // Note that batch calls may not be executed atomically on the server side.
 func (c *Client) BatchCallContext(ctx context.Context, b []BatchElem) error {

@@ -387,7 +387,7 @@ func TestClientCreateFeedMultihash(t *testing.T) {
 
 	swarmHash, err := client.UploadRaw(bytes.NewReader(databytes), int64(len(databytes)), false)
 	if err != nil {
-		t.Fatalf("Error uploading raw test data: %s", err)
+		t.Fatalf("ErrorMsg uploading raw test data: %s", err)
 	}
 
 	s := common.FromHex(swarmHash)
@@ -400,13 +400,13 @@ func TestClientCreateFeedMultihash(t *testing.T) {
 
 	createRequest.SetData(mh)
 	if err := createRequest.Sign(signer); err != nil {
-		t.Fatalf("Error signing update: %s", err)
+		t.Fatalf("ErrorMsg signing update: %s", err)
 	}
 
 	feedManifestHash, err := client.CreateFeedWithManifest(createRequest)
 
 	if err != nil {
-		t.Fatalf("Error creating feed manifest: %s", err)
+		t.Fatalf("ErrorMsg creating feed manifest: %s", err)
 	}
 
 	correctManifestAddrHex := "bb056a5264c295c2b0f613c8409b9c87ce9d71576ace02458160df4cc894210b"
@@ -422,7 +422,7 @@ func TestClientCreateFeedMultihash(t *testing.T) {
 
 	reader, err := client.QueryFeed(nil, correctManifestAddrHex)
 	if err != nil {
-		t.Fatalf("Error retrieving feed updates: %s", err)
+		t.Fatalf("ErrorMsg retrieving feed updates: %s", err)
 	}
 	defer reader.Close()
 	gotData, err := ioutil.ReadAll(reader)
@@ -453,7 +453,7 @@ func TestClientCreateUpdateFeed(t *testing.T) {
 
 	createRequest.SetData(databytes)
 	if err := createRequest.Sign(signer); err != nil {
-		t.Fatalf("Error signing update: %s", err)
+		t.Fatalf("ErrorMsg signing update: %s", err)
 	}
 
 	feedManifestHash, err := client.CreateFeedWithManifest(createRequest)
@@ -465,7 +465,7 @@ func TestClientCreateUpdateFeed(t *testing.T) {
 
 	reader, err := client.QueryFeed(nil, correctManifestAddrHex)
 	if err != nil {
-		t.Fatalf("Error retrieving feed updates: %s", err)
+		t.Fatalf("ErrorMsg retrieving feed updates: %s", err)
 	}
 	defer reader.Close()
 	gotData, err := ioutil.ReadAll(reader)
@@ -481,21 +481,21 @@ func TestClientCreateUpdateFeed(t *testing.T) {
 
 	updateRequest, err := client.GetFeedRequest(nil, correctManifestAddrHex)
 	if err != nil {
-		t.Fatalf("Error retrieving update request template: %s", err)
+		t.Fatalf("ErrorMsg retrieving update request template: %s", err)
 	}
 
 	updateRequest.SetData(databytes)
 	if err := updateRequest.Sign(signer); err != nil {
-		t.Fatalf("Error signing update: %s", err)
+		t.Fatalf("ErrorMsg signing update: %s", err)
 	}
 
 	if err = client.UpdateFeed(updateRequest); err != nil {
-		t.Fatalf("Error updating feed: %s", err)
+		t.Fatalf("ErrorMsg updating feed: %s", err)
 	}
 
 	reader, err = client.QueryFeed(nil, correctManifestAddrHex)
 	if err != nil {
-		t.Fatalf("Error retrieving feed updates: %s", err)
+		t.Fatalf("ErrorMsg retrieving feed updates: %s", err)
 	}
 	defer reader.Close()
 	gotData, err = ioutil.ReadAll(reader)
@@ -516,7 +516,7 @@ func TestClientCreateUpdateFeed(t *testing.T) {
 	lookupParams := feed.NewQueryLatest(fd, lookup.NoClue)
 	reader, err = client.QueryFeed(lookupParams, "")
 	if err != nil {
-		t.Fatalf("Error retrieving feed updates: %s", err)
+		t.Fatalf("ErrorMsg retrieving feed updates: %s", err)
 	}
 	defer reader.Close()
 	gotData, err = ioutil.ReadAll(reader)

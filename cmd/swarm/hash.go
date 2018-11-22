@@ -34,7 +34,7 @@ func hash(ctx *cli.Context) {
 	}
 	f, err := os.Open(args[0])
 	if err != nil {
-		utils.Fatalf("Error opening file " + args[1])
+		utils.Fatalf("ErrorMsg opening file " + args[1])
 	}
 	defer f.Close()
 

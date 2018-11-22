@@ -62,7 +62,7 @@ If you want to encrypt an existing private key, it can be specified by setting
 		if _, err := os.Stat(keyfilepath); err == nil {
 			utils.Fatalf("Keyfile already exists at %s.", keyfilepath)
 		} else if !os.IsNotExist(err) {
-			utils.Fatalf("Error checking if keyfile exists: %v", err)
+			utils.Fatalf("ErrorMsg checking if keyfile exists: %v", err)
 		}
 
 		var privateKey *ecdsa.PrivateKey
@@ -93,7 +93,7 @@ If you want to encrypt an existing private key, it can be specified by setting
 		passphrase := promptPassphrase(true)
 		keyjson, err := keystore.EncryptKey(key, passphrase, keystore.StandardScryptN, keystore.StandardScryptP)
 		if err != nil {
-			utils.Fatalf("Error encrypting key: %v", err)
+			utils.Fatalf("ErrorMsg encrypting key: %v", err)
 		}
 
 		// Store the file to disk.

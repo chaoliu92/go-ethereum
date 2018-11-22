@@ -67,19 +67,19 @@ func createTestFilesAndUploadToSwarm(t *testing.T, api *api.API, files map[strin
 		//create directory
 		err := os.MkdirAll(filePath, 0777)
 		if err != nil {
-			t.Fatalf("Error creating directory '%v' : %v", filePath, err)
+			t.Fatalf("ErrorMsg creating directory '%v' : %v", filePath, err)
 		}
 
 		//create file
 		fd, err1 := os.OpenFile(actualPath, os.O_RDWR|os.O_CREATE, os.FileMode(finfo.perm))
 		if err1 != nil {
-			t.Fatalf("Error creating file %v: %v", actualPath, err1)
+			t.Fatalf("ErrorMsg creating file %v: %v", actualPath, err1)
 		}
 
 		//write content to file
 		_, err = fd.Write(finfo.contents)
 		if err != nil {
-			t.Fatalf("Error writing to file '%v' : %v", filePath, err)
+			t.Fatalf("ErrorMsg writing to file '%v' : %v", filePath, err)
 		}
 		/*
 				Note @holisticode: It's not clear why the Chown command was added to the test suite.
@@ -92,27 +92,27 @@ func createTestFilesAndUploadToSwarm(t *testing.T, api *api.API, files map[strin
 
 			  err = fd.Chown(finfo.uid, finfo.gid)
 			  if err != nil {
-			    t.Fatalf("Error chown file '%v' : %v", filePath, err)
+			    t.Fatalf("ErrorMsg chown file '%v' : %v", filePath, err)
 				}
 		*/
 		err = fd.Chmod(os.FileMode(finfo.perm))
 		if err != nil {
-			t.Fatalf("Error chmod file '%v' : %v", filePath, err)
+			t.Fatalf("ErrorMsg chmod file '%v' : %v", filePath, err)
 		}
 		err = fd.Sync()
 		if err != nil {
-			t.Fatalf("Error sync file '%v' : %v", filePath, err)
+			t.Fatalf("ErrorMsg sync file '%v' : %v", filePath, err)
 		}
 		err = fd.Close()
 		if err != nil {
-			t.Fatalf("Error closing file '%v' : %v", filePath, err)
+			t.Fatalf("ErrorMsg closing file '%v' : %v", filePath, err)
 		}
 	}
 
 	//upload directory to swarm and return hash
 	bzzhash, err := Upload(uploadDir, "", api, toEncrypt)
 	if err != nil {
-		t.Fatalf("Error uploading directory %v: %vm encryption: %v", uploadDir, err, toEncrypt)
+		t.Fatalf("ErrorMsg uploading directory %v: %vm encryption: %v", uploadDir, err, toEncrypt)
 	}
 
 	return bzzhash
@@ -125,7 +125,7 @@ func mountDir(t *testing.T, api *api.API, files map[string]fileInfo, bzzHash str
 	if isFUSEUnsupportedError(err) {
 		t.Skip("FUSE not supported:", err)
 	} else if err != nil {
-		t.Fatalf("Error mounting hash %v: %v", bzzHash, err)
+		t.Fatalf("ErrorMsg mounting hash %v: %v", bzzHash, err)
 	}
 
 	//check directory is mounted
@@ -138,7 +138,7 @@ func mountDir(t *testing.T, api *api.API, files map[string]fileInfo, bzzHash str
 				minfo.LatestManifest != bzzHash ||
 				minfo.fuseConnection == nil {
 				minfo.lock.RUnlock()
-				t.Fatalf("Error mounting: exp(%s): act(%s)", bzzHash, minfo.StartManifest)
+				t.Fatalf("ErrorMsg mounting: exp(%s): act(%s)", bzzHash, minfo.StartManifest)
 			}
 			found = true
 		}
@@ -147,7 +147,7 @@ func mountDir(t *testing.T, api *api.API, files map[string]fileInfo, bzzHash str
 
 	// Test listMounts
 	if !found {
-		t.Fatalf("Error getting mounts information for %v: %v", mountDir, err)
+		t.Fatalf("ErrorMsg getting mounts information for %v: %v", mountDir, err)
 	}
 
 	// Check if file and their attributes are as expected
@@ -169,7 +169,7 @@ func compareGeneratedFileWithFileInMount(t *testing.T, files map[string]fileInfo
 		return nil
 	})
 	if err != nil {
-		t.Fatalf("Error walking dir %v", mountDir)
+		t.Fatalf("ErrorMsg walking dir %v", mountDir)
 	}
 
 	for fname, finfo := range files {
@@ -347,7 +347,7 @@ func (ta *testAPI) mountListAndUnmount(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 	// Check unmount
@@ -390,7 +390,7 @@ func (ta *testAPI) runMaxMounts(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -400,7 +400,7 @@ func (ta *testAPI) runMaxMounts(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 
 	dat.testUploadDir = filepath.Join(dat.testDir, "max-upload3")
@@ -409,7 +409,7 @@ func (ta *testAPI) runMaxMounts(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 
 	dat.testUploadDir = filepath.Join(dat.testDir, "max-upload4")
@@ -418,7 +418,7 @@ func (ta *testAPI) runMaxMounts(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 
 	dat.testUploadDir = filepath.Join(dat.testDir, "max-upload5")
@@ -427,7 +427,7 @@ func (ta *testAPI) runMaxMounts(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 
 	//now try an additional mount, should fail due to max mounts reached
@@ -479,37 +479,37 @@ func (ta *testAPI) remount(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
 	// try mounting the same hash second time
 	testMountDir2, err2 := addDir(dat.testDir, "remount-mount2")
 	if err2 != nil {
-		t.Fatalf("Error creating second mount dir: %v", err2)
+		t.Fatalf("ErrorMsg creating second mount dir: %v", err2)
 	}
 	_, err2 = dat.swarmfs.Mount(dat.bzzHash, testMountDir2)
 	if err2 != nil {
-		t.Fatalf("Error mounting hash second time on different dir  %v", dat.bzzHash)
+		t.Fatalf("ErrorMsg mounting hash second time on different dir  %v", dat.bzzHash)
 	}
 
 	// mount a different hash in already mounted point
 	dat.files["2.txt"] = fileInfo{0700, 333, 444, getRandomBytes(10)}
 	testUploadDir2, err3 := addDir(dat.testDir, "remount-upload2")
 	if err3 != nil {
-		t.Fatalf("Error creating second upload dir: %v", err3)
+		t.Fatalf("ErrorMsg creating second upload dir: %v", err3)
 	}
 	bzzHash2 := createTestFilesAndUploadToSwarm(t, ta.api, dat.files, testUploadDir2, toEncrypt)
 	_, err = swarmfs.Mount(bzzHash2, dat.testMountDir)
 	if err == nil {
-		t.Fatalf("Error mounting hash  %v", bzzHash2)
+		t.Fatalf("ErrorMsg mounting hash  %v", bzzHash2)
 	}
 	log.Debug("Mount on existing mount point failed. Correct.")
 
 	// mount nonexistent hash
 	failDir, err3 := addDir(dat.testDir, "remount-fail")
 	if err3 != nil {
-		t.Fatalf("Error creating remount dir: %v", bzzHash2)
+		t.Fatalf("ErrorMsg creating remount dir: %v", bzzHash2)
 	}
 	failHash := "0xfea11223344"
 	_, err = swarmfs.Mount(failHash, failDir)
@@ -547,7 +547,7 @@ func (ta *testAPI) unmount(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -595,7 +595,7 @@ func (ta *testAPI) unmountWhenResourceBusy(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -671,7 +671,7 @@ func (ta *testAPI) seekInMultiChunkFile(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -685,19 +685,19 @@ func (ta *testAPI) seekInMultiChunkFile(t *testing.T, toEncrypt bool) {
 	defer func() {
 		err := d.Close()
 		if err != nil {
-			t.Fatalf("Error closing file! %v", err)
+			t.Fatalf("ErrorMsg closing file! %v", err)
 		}
 	}()
 
 	_, err = d.Seek(5000, 0)
 	if err != nil {
-		t.Fatalf("Error seeking in file: %v", err)
+		t.Fatalf("ErrorMsg seeking in file: %v", err)
 	}
 
 	contents := make([]byte, 1024)
 	_, err = d.Read(contents)
 	if err != nil {
-		t.Fatalf("Error reading file: %v", err)
+		t.Fatalf("ErrorMsg reading file: %v", err)
 	}
 	log.Debug("Read contents")
 	finfo := dat.files["1.txt"]
@@ -739,7 +739,7 @@ func (ta *testAPI) createNewFile(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -776,7 +776,7 @@ func (ta *testAPI) createNewFile(t *testing.T, toEncrypt bool) {
 
 	testMountDir2, err3 := addDir(dat.testDir, "create-mount2")
 	if err3 != nil {
-		t.Fatalf("Error creating mount dir2: %v", err3)
+		t.Fatalf("ErrorMsg creating mount dir2: %v", err3)
 	}
 	// mount again and see if things are okay
 	dat.files["2.txt"] = fileInfo{0700, 333, 444, contents}
@@ -819,7 +819,7 @@ func (ta *testAPI) createNewFileInsideDirectory(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -835,17 +835,17 @@ func (ta *testAPI) createNewFileInsideDirectory(t *testing.T, toEncrypt bool) {
 	contents := make([]byte, 11)
 	_, err = rand.Read(contents)
 	if err != nil {
-		t.Fatalf("Error filling random bytes into byte array %v", err)
+		t.Fatalf("ErrorMsg filling random bytes into byte array %v", err)
 	}
 	log.Debug("Content read")
 	_, err = d.Write(contents)
 	if err != nil {
-		t.Fatalf("Error writing random bytes into file %v", err)
+		t.Fatalf("ErrorMsg writing random bytes into file %v", err)
 	}
 	log.Debug("Content written")
 	err = d.Close()
 	if err != nil {
-		t.Fatalf("Error closing file %v", err)
+		t.Fatalf("ErrorMsg closing file %v", err)
 	}
 	log.Debug("File closed")
 
@@ -857,7 +857,7 @@ func (ta *testAPI) createNewFileInsideDirectory(t *testing.T, toEncrypt bool) {
 
 	testMountDir2, err3 := addDir(dat.testDir, "createinsidedir-mount2")
 	if err3 != nil {
-		t.Fatalf("Error creating mount dir2: %v", err3)
+		t.Fatalf("ErrorMsg creating mount dir2: %v", err3)
 	}
 	// mount again and see if things are okay
 	dat.files["one/2.txt"] = fileInfo{0700, 333, 444, contents}
@@ -900,14 +900,14 @@ func (ta *testAPI) createNewFileInsideNewDirectory(t *testing.T, toEncrypt bool)
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
 	// Create a new file inside a existing dir and check
 	dirToCreate, err2 := addDir(dat.testMountDir, "one")
 	if err2 != nil {
-		t.Fatalf("Error creating mount dir2: %v", err2)
+		t.Fatalf("ErrorMsg creating mount dir2: %v", err2)
 	}
 	actualPath := filepath.Join(dirToCreate, "2.txt")
 	d, err1 := os.OpenFile(actualPath, os.O_RDWR|os.O_CREATE, os.FileMode(0665))
@@ -919,17 +919,17 @@ func (ta *testAPI) createNewFileInsideNewDirectory(t *testing.T, toEncrypt bool)
 	contents := make([]byte, 11)
 	_, err = rand.Read(contents)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to byte array: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to byte array: %v", err)
 	}
 	log.Debug("content read")
 	_, err = d.Write(contents)
 	if err != nil {
-		t.Fatalf("Error writing to file: %v", err)
+		t.Fatalf("ErrorMsg writing to file: %v", err)
 	}
 	log.Debug("content written")
 	err = d.Close()
 	if err != nil {
-		t.Fatalf("Error closing file: %v", err)
+		t.Fatalf("ErrorMsg closing file: %v", err)
 	}
 	log.Debug("File closed")
 
@@ -982,7 +982,7 @@ func (ta *testAPI) removeExistingFile(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -990,7 +990,7 @@ func (ta *testAPI) removeExistingFile(t *testing.T, toEncrypt bool) {
 	actualPath := filepath.Join(dat.testMountDir, "five.txt")
 	err = os.Remove(actualPath)
 	if err != nil {
-		t.Fatalf("Error removing file! %v", err)
+		t.Fatalf("ErrorMsg removing file! %v", err)
 	}
 	mi, err2 := dat.swarmfs.Unmount(dat.testMountDir)
 	if err2 != nil {
@@ -1042,7 +1042,7 @@ func (ta *testAPI) removeExistingFileInsideDir(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -1051,7 +1051,7 @@ func (ta *testAPI) removeExistingFileInsideDir(t *testing.T, toEncrypt bool) {
 	actualPath = filepath.Join(actualPath, "five.txt")
 	err = os.Remove(actualPath)
 	if err != nil {
-		t.Fatalf("Error removing file! %v", err)
+		t.Fatalf("ErrorMsg removing file! %v", err)
 	}
 	mi, err2 := dat.swarmfs.Unmount(dat.testMountDir)
 	if err2 != nil {
@@ -1110,7 +1110,7 @@ func (ta *testAPI) removeNewlyAddedFile(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -1118,7 +1118,7 @@ func (ta *testAPI) removeNewlyAddedFile(t *testing.T, toEncrypt bool) {
 	dirToCreate := filepath.Join(dat.testMountDir, "one")
 	err = os.MkdirAll(dirToCreate, os.FileMode(0665))
 	if err != nil {
-		t.Fatalf("Error creating dir in mounted dir: %v", err)
+		t.Fatalf("ErrorMsg creating dir in mounted dir: %v", err)
 	}
 	actualPath := filepath.Join(dirToCreate, "2.txt")
 	d, err1 := os.OpenFile(actualPath, os.O_RDWR|os.O_CREATE, os.FileMode(0665))
@@ -1130,17 +1130,17 @@ func (ta *testAPI) removeNewlyAddedFile(t *testing.T, toEncrypt bool) {
 	contents := make([]byte, 11)
 	_, err = rand.Read(contents)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to byte array: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to byte array: %v", err)
 	}
 	log.Debug("content read")
 	_, err = d.Write(contents)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to file: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to file: %v", err)
 	}
 	log.Debug("content written")
 	err = d.Close()
 	if err != nil {
-		t.Fatalf("Error closing file: %v", err)
+		t.Fatalf("ErrorMsg closing file: %v", err)
 	}
 	log.Debug("file closed")
 
@@ -1149,7 +1149,7 @@ func (ta *testAPI) removeNewlyAddedFile(t *testing.T, toEncrypt bool) {
 
 	err = os.Remove(actualPath)
 	if err != nil {
-		t.Fatalf("Error removing file: %v", err)
+		t.Fatalf("ErrorMsg removing file: %v", err)
 	}
 	log.Debug("file removed")
 
@@ -1161,7 +1161,7 @@ func (ta *testAPI) removeNewlyAddedFile(t *testing.T, toEncrypt bool) {
 
 	testMountDir2, err3 := addDir(dat.testDir, "removenew-mount2")
 	if err3 != nil {
-		t.Fatalf("Error creating mount dir2: %v", err3)
+		t.Fatalf("ErrorMsg creating mount dir2: %v", err3)
 	}
 	// mount again and see if things are okay
 	_ = mountDir(t, ta.api, dat.files, mi.LatestManifest, testMountDir2)
@@ -1207,7 +1207,7 @@ func (ta *testAPI) addNewFileAndModifyContents(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -1223,17 +1223,17 @@ func (ta *testAPI) addNewFileAndModifyContents(t *testing.T, toEncrypt bool) {
 	line1 := []byte("Line 1")
 	_, err = rand.Read(line1)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to byte array: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to byte array: %v", err)
 	}
 	log.Debug("line read")
 	_, err = d.Write(line1)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to file: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to file: %v", err)
 	}
 	log.Debug("line written")
 	err = d.Close()
 	if err != nil {
-		t.Fatalf("Error closing file: %v", err)
+		t.Fatalf("ErrorMsg closing file: %v", err)
 	}
 	log.Debug("file closed")
 
@@ -1247,7 +1247,7 @@ func (ta *testAPI) addNewFileAndModifyContents(t *testing.T, toEncrypt bool) {
 	//mount on a different dir to see if modified file is correct
 	testMountDir2, err3 := addDir(dat.testDir, "modifyfile-mount2")
 	if err3 != nil {
-		t.Fatalf("Error creating mount dir2: %v", err3)
+		t.Fatalf("ErrorMsg creating mount dir2: %v", err3)
 	}
 	dat.files["2.txt"] = fileInfo{0700, 333, 444, line1}
 	_ = mountDir(t, ta.api, dat.files, mi1.LatestManifest, testMountDir2)
@@ -1267,12 +1267,12 @@ func (ta *testAPI) addNewFileAndModifyContents(t *testing.T, toEncrypt bool) {
 	//let's clean up the mounted dir first: remove...
 	err = os.RemoveAll(dat.testMountDir)
 	if err != nil {
-		t.Fatalf("Error cleaning up mount dir: %v", err)
+		t.Fatalf("ErrorMsg cleaning up mount dir: %v", err)
 	}
 	//...and re-create
 	err = os.MkdirAll(dat.testMountDir, 0777)
 	if err != nil {
-		t.Fatalf("Error re-creating mount dir: %v", err)
+		t.Fatalf("ErrorMsg re-creating mount dir: %v", err)
 	}
 	//now remount
 	_ = mountDir(t, ta.api, dat.files, mi2.LatestManifest, dat.testMountDir)
@@ -1289,21 +1289,21 @@ func (ta *testAPI) addNewFileAndModifyContents(t *testing.T, toEncrypt bool) {
 	line2 := []byte("Line 2")
 	_, err = rand.Read(line2)
 	if err != nil {
-		t.Fatalf("Error modifying random bytes to byte array: %v", err)
+		t.Fatalf("ErrorMsg modifying random bytes to byte array: %v", err)
 	}
 	log.Debug("line read")
 	_, err = fd.Seek(int64(len(line1)), 0)
 	if err != nil {
-		t.Fatalf("Error seeking position for modification: %v", err)
+		t.Fatalf("ErrorMsg seeking position for modification: %v", err)
 	}
 	_, err = fd.Write(line2)
 	if err != nil {
-		t.Fatalf("Error modifying file: %v", err)
+		t.Fatalf("ErrorMsg modifying file: %v", err)
 	}
 	log.Debug("line written")
 	err = fd.Close()
 	if err != nil {
-		t.Fatalf("Error closing modified file; %v", err)
+		t.Fatalf("ErrorMsg closing modified file; %v", err)
 	}
 	log.Debug("file closed")
 
@@ -1363,7 +1363,7 @@ func (ta *testAPI) removeEmptyDir(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -1412,7 +1412,7 @@ func (ta *testAPI) removeDirWhichHasFiles(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -1420,7 +1420,7 @@ func (ta *testAPI) removeDirWhichHasFiles(t *testing.T, toEncrypt bool) {
 	dirPath := filepath.Join(dat.testMountDir, "two")
 	err = os.RemoveAll(dirPath)
 	if err != nil {
-		t.Fatalf("Error removing directory in mounted dir: %v", err)
+		t.Fatalf("ErrorMsg removing directory in mounted dir: %v", err)
 	}
 
 	mi, err2 := dat.swarmfs.Unmount(dat.testMountDir)
@@ -1489,14 +1489,14 @@ func (ta *testAPI) removeDirWhichHasSubDirs(t *testing.T, toEncrypt bool) {
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
 	dirPath := filepath.Join(dat.testMountDir, "two")
 	err = os.RemoveAll(dirPath)
 	if err != nil {
-		t.Fatalf("Error removing directory in mounted dir: %v", err)
+		t.Fatalf("ErrorMsg removing directory in mounted dir: %v", err)
 	}
 
 	//delete a directory inside the mounted dir with all its files
@@ -1570,14 +1570,14 @@ func (ta *testAPI) appendFileContentsToEnd(t *testing.T, toEncrypt bool) {
 	line1 := make([]byte, 10)
 	_, err = rand.Read(line1)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to byte array: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to byte array: %v", err)
 	}
 
 	dat.files["1.txt"] = fileInfo{0700, 333, 444, line1}
 
 	dat, err = ta.uploadAndMount(dat, t)
 	if err != nil {
-		t.Fatalf("Error during upload of files to swarm / mount of swarm dir: %v", err)
+		t.Fatalf("ErrorMsg during upload of files to swarm / mount of swarm dir: %v", err)
 	}
 	defer dat.swarmfs.Stop()
 
@@ -1591,21 +1591,21 @@ func (ta *testAPI) appendFileContentsToEnd(t *testing.T, toEncrypt bool) {
 	line2 := make([]byte, 5)
 	_, err = rand.Read(line2)
 	if err != nil {
-		t.Fatalf("Error writing random bytes to byte array: %v", err)
+		t.Fatalf("ErrorMsg writing random bytes to byte array: %v", err)
 	}
 	log.Debug("line read")
 	_, err = fd.Seek(int64(len(line1)), 0)
 	if err != nil {
-		t.Fatalf("Error searching for position to append: %v", err)
+		t.Fatalf("ErrorMsg searching for position to append: %v", err)
 	}
 	_, err = fd.Write(line2)
 	if err != nil {
-		t.Fatalf("Error appending: %v", err)
+		t.Fatalf("ErrorMsg appending: %v", err)
 	}
 	log.Debug("line written")
 	err = fd.Close()
 	if err != nil {
-		t.Fatalf("Error closing file: %v", err)
+		t.Fatalf("ErrorMsg closing file: %v", err)
 	}
 	log.Debug("file closed")
 

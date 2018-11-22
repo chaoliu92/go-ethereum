@@ -365,7 +365,7 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 	switch msg.Code {
 	case StatusMsg:
 		p.Log().Trace("Received status message")
-		// Status messages should never arrive after the handshake
+		// StatusCode messages should never arrive after the handshake
 		return errResp(ErrExtraStatusMsg, "uncontrolled status message")
 
 	// Block header query, collect the requested headers and reply

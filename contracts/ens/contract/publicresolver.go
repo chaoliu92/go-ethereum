@@ -519,7 +519,7 @@ type PublicResolverABIChangedIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *PublicResolverABIChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -559,7 +559,7 @@ func (it *PublicResolverABIChangedIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *PublicResolverABIChangedIterator) Error() error {
 	return it.fail
 }
@@ -660,7 +660,7 @@ type PublicResolverAddrChangedIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *PublicResolverAddrChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -700,7 +700,7 @@ func (it *PublicResolverAddrChangedIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *PublicResolverAddrChangedIterator) Error() error {
 	return it.fail
 }
@@ -793,7 +793,7 @@ type PublicResolverContentChangedIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *PublicResolverContentChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -833,7 +833,7 @@ func (it *PublicResolverContentChangedIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *PublicResolverContentChangedIterator) Error() error {
 	return it.fail
 }
@@ -926,7 +926,7 @@ type PublicResolverNameChangedIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *PublicResolverNameChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -966,7 +966,7 @@ func (it *PublicResolverNameChangedIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *PublicResolverNameChangedIterator) Error() error {
 	return it.fail
 }
@@ -1059,7 +1059,7 @@ type PublicResolverPubkeyChangedIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *PublicResolverPubkeyChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -1099,7 +1099,7 @@ func (it *PublicResolverPubkeyChangedIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *PublicResolverPubkeyChangedIterator) Error() error {
 	return it.fail
 }
@@ -1193,7 +1193,7 @@ type PublicResolverTextChangedIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *PublicResolverTextChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -1233,7 +1233,7 @@ func (it *PublicResolverTextChangedIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *PublicResolverTextChangedIterator) Error() error {
 	return it.fail
 }

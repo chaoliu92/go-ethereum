@@ -107,7 +107,7 @@ func NewNoResolverError(tld string) *NoResolverError {
 	return &NoResolverError{TLD: tld}
 }
 
-// Error NoResolverError implements error
+// ErrorMsg NoResolverError implements error
 func (e *NoResolverError) Error() string {
 	if e.TLD == "" {
 		return "no ENS resolver"

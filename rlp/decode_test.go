@@ -53,7 +53,7 @@ func TestStreamKind(t *testing.T) {
 		s := NewStream(newPlainReader(unhex(test.input)), 0)
 		kind, len, err := s.Kind()
 		if err != nil {
-			t.Errorf("test %d: Kind returned error: %v", i, err)
+			t.Errorf("test %d: ErrorCode returned error: %v", i, err)
 			continue
 		}
 		if kind != test.wantKind {
@@ -68,7 +68,7 @@ func TestStreamKind(t *testing.T) {
 func TestNewListStream(t *testing.T) {
 	ls := NewListStream(bytes.NewReader(unhex("0101010101")), 3)
 	if k, size, err := ls.Kind(); k != List || size != 3 || err != nil {
-		t.Errorf("Kind() returned (%v, %d, %v), expected (List, 3, nil)", k, size, err)
+		t.Errorf("ErrorCode() returned (%v, %d, %v), expected (List, 3, nil)", k, size, err)
 	}
 	if size, err := ls.List(); size != 3 || err != nil {
 		t.Errorf("List() returned (%d, %v), expected (3, nil)", size, err)
@@ -106,7 +106,7 @@ func TestStreamErrors(t *testing.T) {
 		{"00", calls{"List"}, nil, ErrExpectedList},
 		{"80", calls{"List"}, nil, ErrExpectedList},
 		{"C0", calls{"List", "Uint"}, nil, EOL},
-		{"C8C9010101010101010101", calls{"List", "Kind"}, nil, ErrElemTooLarge},
+		{"C8C9010101010101010101", calls{"List", "ErrorCode"}, nil, ErrElemTooLarge},
 		{"C3C2010201", calls{"List", "List", "Uint", "Uint", "ListEnd", "Uint"}, nil, EOL},
 		{"00", calls{"ListEnd"}, nil, errNotInList},
 		{"C401020304", calls{"List", "Uint", "ListEnd"}, nil, errNotAtEOL},
@@ -128,17 +128,17 @@ func TestStreamErrors(t *testing.T) {
 		{"8101", calls{"Bytes"}, nil, ErrCanonSize},
 		{"817F", calls{"Bytes"}, nil, ErrCanonSize},
 		{"8180", calls{"Bytes"}, nil, nil},
-		{"B800", calls{"Kind"}, withoutInputLimit, ErrCanonSize},
-		{"B90000", calls{"Kind"}, withoutInputLimit, ErrCanonSize},
-		{"B90055", calls{"Kind"}, withoutInputLimit, ErrCanonSize},
+		{"B800", calls{"ErrorCode"}, withoutInputLimit, ErrCanonSize},
+		{"B90000", calls{"ErrorCode"}, withoutInputLimit, ErrCanonSize},
+		{"B90055", calls{"ErrorCode"}, withoutInputLimit, ErrCanonSize},
 		{"BA0002FFFF", calls{"Bytes"}, withoutInputLimit, ErrCanonSize},
-		{"F800", calls{"Kind"}, withoutInputLimit, ErrCanonSize},
-		{"F90000", calls{"Kind"}, withoutInputLimit, ErrCanonSize},
-		{"F90055", calls{"Kind"}, withoutInputLimit, ErrCanonSize},
+		{"F800", calls{"ErrorCode"}, withoutInputLimit, ErrCanonSize},
+		{"F90000", calls{"ErrorCode"}, withoutInputLimit, ErrCanonSize},
+		{"F90055", calls{"ErrorCode"}, withoutInputLimit, ErrCanonSize},
 		{"FA0002FFFF", calls{"List"}, withoutInputLimit, ErrCanonSize},
 
 		// Expected EOF
-		{"", calls{"Kind"}, nil, io.EOF},
+		{"", calls{"ErrorCode"}, nil, io.EOF},
 		{"", calls{"Uint"}, nil, io.EOF},
 		{"", calls{"List"}, nil, io.EOF},
 		{"8180", calls{"Uint", "Uint"}, nil, io.EOF},
@@ -176,17 +176,17 @@ func TestStreamErrors(t *testing.T) {
 		{"C801", calls{"List", "Uint", "Uint"}, withoutInputLimit, io.ErrUnexpectedEOF},
 
 		// This test verifies that the input position is advanced
-		// correctly when calling Bytes for empty strings. Kind can be called
+		// correctly when calling Bytes for empty strings. ErrorCode can be called
 		// any number of times in between and doesn't advance.
 		{"C3808080", calls{
 			"List",  // enter the list
 			"Bytes", // past first element
 
-			"Kind", "Kind", "Kind", // this shouldn't advance
+			"ErrorCode", "ErrorCode", "ErrorCode", // this shouldn't advance
 
 			"Bytes", // past second element
 
-			"Kind", "Kind", // can't hurt to try
+			"ErrorCode", "ErrorCode", // can't hurt to try
 
 			"Bytes", // past final element
 			"Bytes", // this one should fail
@@ -703,7 +703,7 @@ func ExampleDecode() {
 	var s example
 	err := Decode(bytes.NewReader(input), &s)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Printf("ErrorMsg: %v\n", err)
 	} else {
 		fmt.Printf("Decoded value: %#v\n", s)
 	}
@@ -744,7 +744,7 @@ func ExampleStream() {
 
 	// Check what kind of value lies ahead
 	kind, size, _ := s.Kind()
-	fmt.Printf("Kind: %v size:%d\n", kind, size)
+	fmt.Printf("ErrorCode: %v size:%d\n", kind, size)
 
 	// Enter the list
 	if _, err := s.List(); err != nil {
@@ -762,7 +762,7 @@ func ExampleStream() {
 		fmt.Printf("ListEnd error: %v\n", err)
 	}
 	// Output:
-	// Kind: List size:9
+	// ErrorCode: List size:9
 	// 10 <nil>
 	// 20 <nil>
 	// [102 111 111 98 97 114] <nil>

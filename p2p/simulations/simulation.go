@@ -140,7 +140,7 @@ func newStepResult() *StepResult {
 }
 
 type StepResult struct {
-	// Error is the error encountered whilst running the step
+	// ErrorMsg is the error encountered whilst running the step
 	Error error
 
 	// StartedAt is the time the step started

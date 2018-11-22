@@ -20,6 +20,7 @@ package eth
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
 	"math/big"
 	"runtime"
 	"sync"
@@ -148,11 +149,18 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		}
 		rawdb.WriteDatabaseVersion(chainDb, core.BlockChainVersion)
 	}
+	// Create exception recording file
+	coll, bucket, err := experiment.Collections()
+	if err != nil {
+		return nil, err
+	}
 	var (
 		vmConfig = vm.Config{
 			EnablePreimageRecording: config.EnablePreimageRecording,
 			EWASMInterpreter:        config.EWASMInterpreter,
 			EVMInterpreter:          config.EVMInterpreter,
+			ExceptionColl:           coll,   // MongoDB collection for exception records
+			ExceptionGridFSBucket:   bucket, // MongoDB GridFS bucket for exception trace steps
 		}
 		cacheConfig = &core.CacheConfig{Disabled: config.NoPruning, TrieNodeLimit: config.TrieCache, TrieTimeLimit: config.TrieTimeout}
 	)

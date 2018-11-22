@@ -68,7 +68,7 @@ type NodeIterator interface {
 	// nodes will be skipped.
 	Next(bool) bool
 
-	// Error returns the error status of the iterator.
+	// ErrorMsg returns the error status of the iterator.
 	Error() error
 
 	// Hash returns the hash of the current node.
@@ -214,7 +214,7 @@ func (it *nodeIterator) Error() error {
 
 // Next moves the iterator to the next node, returning whether there are any
 // further nodes. In case of an internal error this method returns false and
-// sets the Error field to the encountered failure. If `descend` is false,
+// sets the ErrorMsg field to the encountered failure. If `descend` is false,
 // skips iterating over any subnodes of the current node.
 func (it *nodeIterator) Next(descend bool) bool {
 	if it.err == errIteratorEnd {

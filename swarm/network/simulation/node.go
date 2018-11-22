@@ -206,7 +206,7 @@ func (s *Simulation) UploadSnapshot(snapshotFile string, opts ...AddNodeOption) 
 	defer func() {
 		err := f.Close()
 		if err != nil {
-			log.Error("Error closing snapshot file", "err", err)
+			log.Error("ErrorMsg closing snapshot file", "err", err)
 		}
 	}()
 	jsonbyte, err := ioutil.ReadAll(f)

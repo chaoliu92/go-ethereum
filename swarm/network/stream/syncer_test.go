@@ -96,7 +96,7 @@ func testSyncBetweenNodes(t *testing.T, nodes, conns, chunkCount int, skipCheck 
 				if *useMockStore {
 					err := globalStore.Close()
 					if err != nil {
-						log.Error("Error closing global store! %v", "err", err)
+						log.Error("ErrorMsg closing global store! %v", "err", err)
 					}
 					os.RemoveAll(gDir)
 				}

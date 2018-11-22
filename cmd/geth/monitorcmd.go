@@ -345,7 +345,7 @@ func updateFooter(ctx *cli.Context, err error, footer *termui.Par) {
 
 	// Append any encountered errors
 	if err != nil {
-		footer.Text = fmt.Sprintf("Error: %v.", err)
+		footer.Text = fmt.Sprintf("ErrorMsg: %v.", err)
 		footer.TextFgColor = termui.ColorRed | termui.AttrBold
 	}
 }

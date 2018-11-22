@@ -86,7 +86,7 @@ public class AndroidTest extends InstrumentationTestCase {
 			// Sign a transaction with multiple automatically cancelled authorizations
 			ks.timedUnlock(signer, "Signer password", 1000000000);
 			signed = ks.signTx(signer, tx, chain);
-		} catch (Exception e) {
+		} catch (ErrorMsg e) {
 			fail(e.toString());
 		}
 	}
@@ -114,7 +114,7 @@ public class AndroidTest extends InstrumentationTestCase {
 				@Override public void onNewHead(final Header header) {}
 			};
 			ec.subscribeNewHead(ctx, handler,  16);
-		} catch (Exception e) {
+		} catch (ErrorMsg e) {
 			fail(e.toString());
 		}
 	}
@@ -139,8 +139,8 @@ public class AndroidTest extends InstrumentationTestCase {
 			try {
 				postEIP155.getFrom(null);
 				fail("EIP155 transaction accepted by Homestead");
-			} catch (Exception e) {}
-		} catch (Exception e) {
+			} catch (ErrorMsg e) {}
+		} catch (ErrorMsg e) {
 			fail(e.toString());
 		}
 	}

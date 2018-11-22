@@ -73,12 +73,12 @@ func createGlobalStore() (string, *mockdb.GlobalStore, error) {
 	var globalStore *mockdb.GlobalStore
 	globalStoreDir, err := ioutil.TempDir("", "global.store")
 	if err != nil {
-		log.Error("Error initiating global store temp directory!", "err", err)
+		log.Error("ErrorMsg initiating global store temp directory!", "err", err)
 		return "", nil, err
 	}
 	globalStore, err = mockdb.NewGlobalStore(globalStoreDir)
 	if err != nil {
-		log.Error("Error initiating global store!", "err", err)
+		log.Error("ErrorMsg initiating global store!", "err", err)
 		return "", nil, err
 	}
 	return globalStoreDir, globalStore, nil
@@ -201,7 +201,7 @@ func uploadFilesToNodes(sim *simulation.Simulation) ([]storage.Address, []string
 	for i, id := range nodes {
 		item, ok := sim.NodeItem(id, bucketKeyFileStore)
 		if !ok {
-			return nil, nil, fmt.Errorf("Error accessing localstore")
+			return nil, nil, fmt.Errorf("ErrorMsg accessing localstore")
 		}
 		fileStore := item.(*storage.FileStore)
 		//generate a file
@@ -233,7 +233,7 @@ func generateRandomFile() (string, error) {
 	b := make([]byte, fileSize*1024)
 	_, err := crand.Read(b)
 	if err != nil {
-		log.Error("Error generating random file.", "err", err)
+		log.Error("ErrorMsg generating random file.", "err", err)
 		return "", err
 	}
 	return string(b), nil

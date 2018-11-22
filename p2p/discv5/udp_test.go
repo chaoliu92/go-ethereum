@@ -205,7 +205,7 @@ var (
 // 	case err := <-errc:
 // 		t.Errorf("findnode error: %v", err)
 // 	case <-time.After(5 * time.Second):
-// 		t.Error("findnode did not return within 5 seconds")
+// 		t.ErrorMsg("findnode did not return within 5 seconds")
 // 	}
 // }
 //

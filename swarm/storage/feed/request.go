@@ -121,7 +121,7 @@ func (r *Request) Sign(signer Signer) error {
 	// recover it from the signature to see if they match
 	userAddr, err := getUserAddr(digest, signature)
 	if err != nil {
-		return NewError(ErrInvalidSignature, "Error verifying signature")
+		return NewError(ErrInvalidSignature, "ErrorMsg verifying signature")
 	}
 
 	if userAddr != signer.Address() { // sanity check to make sure the Signer is declaring the same address used to sign!

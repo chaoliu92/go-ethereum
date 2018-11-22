@@ -325,7 +325,7 @@ var (
 		}
 		// Next advances the iterator to the subsequent event, returning whether there
 		// are any more events found. In case of a retrieval or parsing error, false is
-		// returned and Error() can be queried for the exact failure.
+		// returned and ErrorMsg() can be queried for the exact failure.
 		func (it *{{$contract.Type}}{{.Normalized.Name}}Iterator) Next() bool {
 			// If the iterator failed, stop iterating
 			if (it.fail != nil) {
@@ -364,8 +364,8 @@ var (
 				return it.Next()
 			}
 		}
-		// Error returns any retrieval or parsing error occurred during filtering.
-		func (it *{{$contract.Type}}{{.Normalized.Name}}Iterator) Error() error {
+		// ErrorMsg returns any retrieval or parsing error occurred during filtering.
+		func (it *{{$contract.Type}}{{.Normalized.Name}}Iterator) ErrorMsg() error {
 			return it.fail
 		}
 		// Close terminates the iteration process, releasing any pending underlying
@@ -464,7 +464,7 @@ import org.ethereum.geth.internal.*;
 			public final static byte[] BYTECODE = "{{.InputBin}}".getBytes();
 
 			// deploy deploys a new Ethereum contract, binding an instance of {{.Type}} to it.
-			public static {{.Type}} deploy(TransactOpts auth, EthereumClient client{{range .Constructor.Inputs}}, {{bindtype .Type}} {{.Name}}{{end}}) throws Exception {
+			public static {{.Type}} deploy(TransactOpts auth, EthereumClient client{{range .Constructor.Inputs}}, {{bindtype .Type}} {{.Name}}{{end}}) throws ErrorMsg {
 				Interfaces args = Geth.newInterfaces({{(len .Constructor.Inputs)}});
 				{{range $index, $element := .Constructor.Inputs}}
 				  args.set({{$index}}, Geth.newInterface()); args.get({{$index}}).set{{namedtype (bindtype .Type) .Type}}({{.Name}});
@@ -490,7 +490,7 @@ import org.ethereum.geth.internal.*;
 		private final BoundContract Contract;
 
 		// Creates a new instance of {{.Type}}, bound to a specific deployed contract.
-		public {{.Type}}(Address address, EthereumClient client) throws Exception {
+		public {{.Type}}(Address address, EthereumClient client) throws ErrorMsg {
 			this(Geth.bindContract(address, ABI, client));
 		}
 
@@ -506,7 +506,7 @@ import org.ethereum.geth.internal.*;
 			// {{.Normalized.Name}} is a free data retrieval call binding the contract method 0x{{printf "%x" .Original.Id}}.
 			//
 			// Solidity: {{.Original.String}}
-			public {{if gt (len .Normalized.Outputs) 1}}{{capitalise .Normalized.Name}}Results{{else}}{{range .Normalized.Outputs}}{{bindtype .Type}}{{end}}{{end}} {{.Normalized.Name}}(CallOpts opts{{range .Normalized.Inputs}}, {{bindtype .Type}} {{.Name}}{{end}}) throws Exception {
+			public {{if gt (len .Normalized.Outputs) 1}}{{capitalise .Normalized.Name}}Results{{else}}{{range .Normalized.Outputs}}{{bindtype .Type}}{{end}}{{end}} {{.Normalized.Name}}(CallOpts opts{{range .Normalized.Inputs}}, {{bindtype .Type}} {{.Name}}{{end}}) throws ErrorMsg {
 				Interfaces args = Geth.newInterfaces({{(len .Normalized.Inputs)}});
 				{{range $index, $item := .Normalized.Inputs}}args.set({{$index}}, Geth.newInterface()); args.get({{$index}}).set{{namedtype (bindtype .Type) .Type}}({{.Name}});
 				{{end}}
@@ -533,7 +533,7 @@ import org.ethereum.geth.internal.*;
 			// {{.Normalized.Name}} is a paid mutator transaction binding the contract method 0x{{printf "%x" .Original.Id}}.
 			//
 			// Solidity: {{.Original.String}}
-			public Transaction {{.Normalized.Name}}(TransactOpts opts{{range .Normalized.Inputs}}, {{bindtype .Type}} {{.Name}}{{end}}) throws Exception {
+			public Transaction {{.Normalized.Name}}(TransactOpts opts{{range .Normalized.Inputs}}, {{bindtype .Type}} {{.Name}}{{end}}) throws ErrorMsg {
 				Interfaces args = Geth.newInterfaces({{(len .Normalized.Inputs)}});
 				{{range $index, $item := .Normalized.Inputs}}args.set({{$index}}, Geth.newInterface()); args.get({{$index}}).set{{namedtype (bindtype .Type) .Type}}({{.Name}});
 				{{end}}

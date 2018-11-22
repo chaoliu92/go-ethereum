@@ -17,7 +17,7 @@ func Warn(msg string, ctx ...interface{}) {
 	l.Output(msg, l.LvlWarn, CallDepth, ctx...)
 }
 
-// Error is a convenient alias for log.Error with stats
+// ErrorMsg is a convenient alias for log.ErrorMsg with stats
 func Error(msg string, ctx ...interface{}) {
 	metrics.GetOrRegisterCounter("error", nil).Inc(1)
 	l.Output(msg, l.LvlError, CallDepth, ctx...)
@@ -41,7 +41,7 @@ func Debug(msg string, ctx ...interface{}) {
 	l.Output(msg, l.LvlDebug, CallDepth, ctx...)
 }
 
-// Trace is a convenient alias for log.Trace with stats
+// Steps is a convenient alias for log.Steps with stats
 func Trace(msg string, ctx ...interface{}) {
 	metrics.GetOrRegisterCounter("trace", nil).Inc(1)
 	l.Output(msg, l.LvlTrace, CallDepth, ctx...)

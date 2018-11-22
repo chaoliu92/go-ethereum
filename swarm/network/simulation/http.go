@@ -49,7 +49,7 @@ func (s *Simulation) WithServer(addr string) *Simulation {
 	go func() {
 		err := s.httpSrv.ListenAndServe()
 		if err != nil {
-			log.Error("Error starting the HTTP server", "error", err)
+			log.Error("ErrorMsg starting the HTTP server", "error", err)
 		}
 	}()
 	return s

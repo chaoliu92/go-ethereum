@@ -262,7 +262,7 @@ func TestUploadSnapshot(t *testing.T) {
 	log.Debug("Uploading snapshot")
 	err := s.UploadSnapshot(fmt.Sprintf("../stream/testing/snapshot_%d.json", nodeCount))
 	if err != nil {
-		t.Fatalf("Error uploading snapshot to simulation network: %v", err)
+		t.Fatalf("ErrorMsg uploading snapshot to simulation network: %v", err)
 	}
 
 	ctx := context.Background()

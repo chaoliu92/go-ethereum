@@ -63,7 +63,7 @@ const (
 var errorToString = map[int]string{
 	ErrMsgTooLong:     "Message too long",
 	ErrDecode:         "Invalid message (RLP error)",
-	ErrWrite:          "Error sending message",
+	ErrWrite:          "ErrorMsg sending message",
 	ErrInvalidMsgCode: "Invalid message code",
 	ErrInvalidMsgType: "Invalid message type",
 	ErrHandshake:      "Handshake error",
@@ -72,7 +72,7 @@ var errorToString = map[int]string{
 }
 
 /*
-Error implements the standard go error interface.
+ErrorMsg implements the standard go error interface.
 Use:
 
   errorf(code, format, params ...interface{})

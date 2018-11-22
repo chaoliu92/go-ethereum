@@ -49,7 +49,7 @@ func manifestAdd(ctx *cli.Context) {
 
 	m, _, err := client.DownloadManifest(hash)
 	if err != nil {
-		utils.Fatalf("Error downloading manifest to add: %v", err)
+		utils.Fatalf("ErrorMsg downloading manifest to add: %v", err)
 	}
 	l := len(m.Entries)
 	if l == 0 {
@@ -83,7 +83,7 @@ func manifestUpdate(ctx *cli.Context) {
 
 	m, _, err := client.DownloadManifest(hash)
 	if err != nil {
-		utils.Fatalf("Error downloading manifest to update: %v", err)
+		utils.Fatalf("ErrorMsg downloading manifest to update: %v", err)
 	}
 	l := len(m.Entries)
 	if l == 0 {

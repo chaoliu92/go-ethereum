@@ -17,8 +17,13 @@
 package vm
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
+	"github.com/mongodb/mongo-go-driver/mongo"
+	"github.com/mongodb/mongo-go-driver/mongo/gridfs"
 	"hash"
+	"os"
 	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -46,6 +51,14 @@ type Config struct {
 	EWASMInterpreter string
 	// Type of the EVM interpreter
 	EVMInterpreter string
+
+	// ErrorMsg record file descriptor and JSON encoder (for writing exception records)
+	ExceptionFile    *os.File
+	ExceptionEncoder *json.Encoder
+
+	// Database collection (for MongoDB) to write exception records
+	ExceptionColl         *mongo.Collection
+	ExceptionGridFSBucket *gridfs.Bucket
 }
 
 // Interpreter is used to run Ethereum based contracts and will utilise the
@@ -55,7 +68,7 @@ type Config struct {
 type Interpreter interface {
 	// Run loops and evaluates the contract's code with the given input data and returns
 	// the return byte-slice and an error if one occurred.
-	Run(contract *Contract, input []byte, static bool) ([]byte, error)
+	Run(contract *Contract, input []byte, static bool, trace *experiment.Trace) ([]byte, error)
 	// CanRun tells if the contract, passed as an argument, can be
 	// run by the current interpreter. This is meant so that the
 	// caller can do something like:
@@ -140,7 +153,7 @@ func (in *EVMInterpreter) enforceRestrictions(op OpCode, operation operation, st
 // It's important to note that any errors returned by the interpreter should be
 // considered a revert-and-consume-all-gas operation except for
 // errExecutionReverted which means revert-and-keep-gas-left.
-func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
+func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, trace *experiment.Trace) (ret []byte, err error) {
 	if in.intPool == nil {
 		in.intPool = poolOfIntPools.get()
 		defer func() {
@@ -165,8 +178,10 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 	in.returnData = nil
 
 	// Don't bother with the execution if there's no code.
-	if len(contract.Code) == 0 {
-		return nil, nil
+	if len(contract.Code) == 0 { // This includes where contract has no call code (i.e. contract.Code = nil)
+		//trace.Steps = nil
+		return nil, nil // Commented to add a new error type
+		//return nil, errors.New("empty call code") // Call a contract with empty code
 	}
 
 	var (
@@ -213,15 +228,25 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// enough stack items available to perform the operation.
 		op = contract.GetOp(pc)
 		operation := in.cfg.JumpTable[op]
+		if trace != nil {
+			// Record trace step for exception experiment use
+			in.evm.TxRecord.NumSteps += 1 // A new execution step for this transaction
+			oneStep := new(experiment.OneStep)
+			oneStep.StepNum = in.evm.TxRecord.NumSteps
+			oneStep.PC = pc
+			oneStep.OpCode = opCodeToString[op]
+			trace.Steps = append(trace.Steps, oneStep)
+		}
+
 		if !operation.valid {
-			return nil, fmt.Errorf("invalid opcode 0x%x", int(op))
+			return nil, fmt.Errorf("invalid opcode 0x%x", int(op)) // invalid instruction
 		}
 		if err := operation.validateStack(stack); err != nil {
-			return nil, err
+			return nil, err // runtime stack underflow/overflow
 		}
 		// If the operation is valid, enforce and write restrictions
 		if err := in.enforceRestrictions(op, operation, stack); err != nil {
-			return nil, err
+			return nil, err // state modification not allowed
 		}
 
 		var memorySize uint64
@@ -230,19 +255,19 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		if operation.memorySize != nil {
 			memSize, overflow := bigUint64(operation.memorySize(stack))
 			if overflow {
-				return nil, errGasUintOverflow
+				return nil, errGasUintOverflow // gas uint overflow due to huge active memory size
 			}
 			// memory is expanded in words of 32 bytes. Gas
 			// is also calculated in words.
 			if memorySize, overflow = math.SafeMul(toWordSize(memSize), 32); overflow {
-				return nil, errGasUintOverflow
+				return nil, errGasUintOverflow // gas uint overflow due to huge active memory size
 			}
 		}
 		// consume the gas and return an error if not enough gas is available.
 		// cost is explicitly set so that the capture state defer method can get the proper cost
 		cost, err = operation.gasCost(in.gasTable, in.evm, contract, stack, mem, memorySize)
 		if err != nil || !contract.UseGas(cost) {
-			return nil, ErrOutOfGas
+			return nil, ErrOutOfGas // out of runtime gas
 		}
 		if memorySize > 0 {
 			mem.Resize(memorySize)
@@ -268,7 +293,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 
 		switch {
 		case err != nil:
-			return nil, err
+			return nil, err // invalid jump destination, return data bound exceed
 		case operation.reverts:
 			return res, errExecutionReverted
 		case operation.halts:

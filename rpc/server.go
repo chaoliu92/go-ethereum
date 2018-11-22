@@ -164,7 +164,7 @@ func (s *Server) serveRequest(ctx context.Context, codec ServerCodec, singleShot
 				log.Debug(fmt.Sprintf("read error %v\n", err))
 				codec.Write(codec.CreateErrorResponse(nil, err))
 			}
-			// Error or end of stream, wait for requests and tear down
+			// ErrorMsg or end of stream, wait for requests and tear down
 			pend.Wait()
 			return nil
 		}

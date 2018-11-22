@@ -347,7 +347,7 @@ func NewContentAddressValidator(hasher SwarmHasher) *ContentAddressValidator {
 // Validate that the given key is a valid content address for the given data
 func (v *ContentAddressValidator) Validate(addr Address, data []byte) bool {
 	if l := len(data); l < 9 || l > ch.DefaultSize+8 {
-		// log.Error("invalid chunk size", "chunk", addr.Hex(), "size", l)
+		// log.ErrorMsg("invalid chunk size", "chunk", addr.Hex(), "size", l)
 		return false
 	}
 

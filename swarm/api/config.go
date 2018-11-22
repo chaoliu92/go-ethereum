@@ -109,7 +109,7 @@ func (c *Config) Init(prvKey *ecdsa.PrivateKey) {
 	c.Path = filepath.Join(c.Path, "bzz-"+common.Bytes2Hex(address.Bytes()))
 	err := os.MkdirAll(c.Path, os.ModePerm)
 	if err != nil {
-		log.Error(fmt.Sprintf("Error creating root swarm data directory: %v", err))
+		log.Error(fmt.Sprintf("ErrorMsg creating root swarm data directory: %v", err))
 		return
 	}
 

@@ -19,6 +19,7 @@ package vm
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -456,7 +457,7 @@ func opReturnDataCopy(pc *uint64, interpreter *EVMInterpreter, contract *Contrac
 	defer interpreter.intPool.put(memOffset, dataOffset, length, end)
 
 	if end.BitLen() > 64 || uint64(len(interpreter.returnData)) < end.Uint64() {
-		return nil, errReturnDataOutOfBounds
+		return nil, errReturnDataOutOfBounds // return data bound exceed
 	}
 	memory.Set(memOffset.Uint64(), length.Uint64(), interpreter.returnData[dataOffset.Uint64():end.Uint64()])
 
@@ -629,7 +630,7 @@ func opJump(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 	pos := stack.pop()
 	if !contract.validJumpdest(pos) {
 		nop := contract.GetOp(pos.Uint64())
-		return nil, fmt.Errorf("invalid jump destination (%v) %v", nop, pos)
+		return nil, fmt.Errorf("invalid jump destination (%v) %v", nop, pos) // invalid jump destination
 	}
 	*pc = pos.Uint64()
 
@@ -642,7 +643,7 @@ func opJumpi(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory
 	if cond.Sign() != 0 {
 		if !contract.validJumpdest(pos) {
 			nop := contract.GetOp(pos.Uint64())
-			return nil, fmt.Errorf("invalid jump destination (%v) %v", nop, pos)
+			return nil, fmt.Errorf("invalid jump destination (%v) %v", nop, pos) // invalid jump destination
 		}
 		*pc = pos.Uint64()
 	} else {
@@ -684,7 +685,19 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	}
 
 	contract.UseGas(gas)
-	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value)
+	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value, trace)
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
+	if trace.ErrorCode != 0 {
+		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+	} else {
+		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	}
+	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
+	//if suberr.ErrorMsg() == "empty call code" {
+	//	suberr = nil
+	//}
+
 	// Push item on the stack based on the returned error. If the ruleset is
 	// homestead we must check for CodeStoreOutOfGasError (homestead only
 	// rule) and treat as an error, if the ruleset is frontier we must
@@ -699,7 +712,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	contract.Gas += returnGas
 	interpreter.intPool.put(value, offset, size)
 
-	if suberr == errExecutionReverted {
+	if suberr == errExecutionReverted { // explicit exception
 		return res, nil
 	}
 	return nil, nil
@@ -717,7 +730,19 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	// Apply EIP150
 	gas -= gas / 64
 	contract.UseGas(gas)
-	res, addr, returnGas, suberr := interpreter.evm.Create2(contract, input, gas, endowment, salt)
+	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	res, addr, returnGas, suberr := interpreter.evm.Create2(contract, input, gas, endowment, salt, trace)
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
+	if trace.ErrorCode != 0 {
+		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+	} else {
+		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	}
+	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
+	//if suberr.ErrorMsg() == "empty call code" {
+	//	suberr = nil
+	//}
+
 	// Push item on the stack based on the returned error.
 	if suberr != nil {
 		stack.push(interpreter.intPool.getZero())
@@ -727,7 +752,7 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	contract.Gas += returnGas
 	interpreter.intPool.put(endowment, offset, size, salt)
 
-	if suberr == errExecutionReverted {
+	if suberr == errExecutionReverted { // explicit exception
 		return res, nil
 	}
 	return nil, nil
@@ -747,13 +772,25 @@ func opCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 	if value.Sign() != 0 {
 		gas += params.CallStipend
 	}
-	ret, returnGas, err := interpreter.evm.Call(contract, toAddr, args, gas, value)
+	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	ret, returnGas, err := interpreter.evm.Call(contract, toAddr, args, gas, value, trace)
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+	if trace.ErrorCode != 0 {
+		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+	} else {
+		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	}
+	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
+	//if err.ErrorMsg() == "empty call code" {
+	//	err = nil
+	//}
+
 	if err != nil {
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetUint64(1))
 	}
-	if err == nil || err == errExecutionReverted {
+	if err == nil || err == errExecutionReverted { // explicit exception
 		memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
 	}
 	contract.Gas += returnGas
@@ -776,13 +813,25 @@ func opCallCode(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 	if value.Sign() != 0 {
 		gas += params.CallStipend
 	}
-	ret, returnGas, err := interpreter.evm.CallCode(contract, toAddr, args, gas, value)
+	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	ret, returnGas, err := interpreter.evm.CallCode(contract, toAddr, args, gas, value, trace)
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+	if trace.ErrorCode != 0 {
+		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+	} else {
+		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	}
+	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
+	//if err.ErrorMsg() == "empty call code" {
+	//	err = nil
+	//}
+
 	if err != nil {
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetUint64(1))
 	}
-	if err == nil || err == errExecutionReverted {
+	if err == nil || err == errExecutionReverted { // explicit exception
 		memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
 	}
 	contract.Gas += returnGas
@@ -801,13 +850,25 @@ func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract,
 	// Get arguments from the memory.
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
-	ret, returnGas, err := interpreter.evm.DelegateCall(contract, toAddr, args, gas)
+	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	ret, returnGas, err := interpreter.evm.DelegateCall(contract, toAddr, args, gas, trace)
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+	if trace.ErrorCode != 0 {
+		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+	} else {
+		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	}
+	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
+	//if err.ErrorMsg() == "empty call code" {
+	//	err = nil
+	//}
+
 	if err != nil {
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetUint64(1))
 	}
-	if err == nil || err == errExecutionReverted {
+	if err == nil || err == errExecutionReverted { // explicit exception
 		memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
 	}
 	contract.Gas += returnGas
@@ -826,13 +887,25 @@ func opStaticCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, m
 	// Get arguments from the memory.
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
-	ret, returnGas, err := interpreter.evm.StaticCall(contract, toAddr, args, gas)
+	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	ret, returnGas, err := interpreter.evm.StaticCall(contract, toAddr, args, gas, trace)
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+	if trace.ErrorCode != 0 {
+		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+	} else {
+		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	}
+	//// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
+	//if err.ErrorMsg() == "empty call code" {
+	//	err = nil
+	//}
+
 	if err != nil {
 		stack.push(interpreter.intPool.getZero())
 	} else {
 		stack.push(interpreter.intPool.get().SetUint64(1))
 	}
-	if err == nil || err == errExecutionReverted {
+	if err == nil || err == errExecutionReverted { // explicit exception
 		memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
 	}
 	contract.Gas += returnGas

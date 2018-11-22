@@ -65,9 +65,9 @@ func checkEntry(t *testing.T, path, match string, multiple bool, trie *manifestT
 	}
 
 	if multiple && entry.Status != http.StatusMultipleChoices {
-		t.Errorf("Expected %d Multiple Choices Status for path %s, match %s, got %d", http.StatusMultipleChoices, path, match, entry.Status)
+		t.Errorf("Expected %d Multiple Choices StatusCode for path %s, match %s, got %d", http.StatusMultipleChoices, path, match, entry.Status)
 	} else if !multiple && entry != nil && entry.Status == http.StatusMultipleChoices {
-		t.Errorf("Were not expecting %d Multiple Choices Status for path %s, match %s, but got it", http.StatusMultipleChoices, path, match)
+		t.Errorf("Were not expecting %d Multiple Choices StatusCode for path %s, match %s, but got it", http.StatusMultipleChoices, path, match)
 	}
 }
 
@@ -165,7 +165,7 @@ func TestReadManifestOverSizeLimit(t *testing.T) {
 	if err == nil {
 		t.Fatal("got no error from readManifest")
 	}
-	// Error message is part of the http response body
+	// ErrorMsg message is part of the http response body
 	// which justifies exact string validation.
 	got := err.Error()
 	want := fmt.Sprintf("Manifest size of %v bytes exceeds the %v byte limit", len(manifest), manifestSizeLimit)

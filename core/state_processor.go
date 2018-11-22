@@ -17,6 +17,10 @@
 package core
 
 import (
+	"bytes"
+	context2 "context"
+	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
@@ -24,7 +28,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/experiment"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
+	"os"
 )
 
 // StateProcessor is a basic Processor, which takes care of transitioning
@@ -95,6 +102,20 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
 	vmenv := vm.NewEVM(context, statedb, config, cfg)
+
+	// Set some metadata about the transaction
+	vmenv.TxRecord = experiment.NewTxRecord()
+	vmenv.TxRecord.BlockNum = context.BlockNumber.Uint64()
+	vmenv.TxRecord.TxIndex = statedb.GetTxIndex() + 1
+	vmenv.TxRecord.TxHash = tx.Hash().String()
+	vmenv.TxRecord.From = msg.From().String()
+	if msg.To() == nil {
+		vmenv.TxRecord.To = ""
+	} else {
+		vmenv.TxRecord.To = msg.To().String()
+	}
+	vmenv.TxRecord.GasLimit = tx.Gas()
+
 	// Apply the transaction to the current state (included in the env)
 	_, gas, failed, err := ApplyMessage(vmenv, msg, gp)
 	if err != nil {
@@ -122,5 +143,48 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	receipt.Logs = statedb.GetLogs(tx.Hash())
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
 
+	// Write exceptional records to database
+	if vmenv.TxRecord.HasException {
+		//if _, err := cfg.ExceptionColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
+		//	if len(regexp.MustCompile("^an inserted document is too large$").FindAllString(err.ErrorMsg(), -1)) > 0 { // for large documents, store in the GridFS instead
+		for _, v := range vmenv.TxRecord.Traces {
+			b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
+			if err != nil {
+				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
+				log.Error(string(vmenv.TxRecord.BlockNum))
+				fmt.Println(vmenv.TxRecord)
+				os.Exit(1)
+			}
+			v.Steps = nil // we use a separate document to store this trace step list
+			docID, err := cfg.ExceptionGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
+			if err != nil {
+				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
+				log.Error(string(vmenv.TxRecord.BlockNum))
+				fmt.Println(vmenv.TxRecord)
+				os.Exit(1)
+			}
+			v.TraceDocID = docID.String() // set trace step's document ID
+		}
+
+		if _, err := cfg.ExceptionColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			log.Error(string(vmenv.TxRecord.BlockNum))
+			fmt.Println(vmenv.TxRecord)
+			os.Exit(1)
+		}
+		//	} else {
+		//		log.ErrorMsg(fmt.Sprintf("MongoDB error, %s", err.ErrorMsg()))
+		//		log.ErrorMsg(string(vmenv.TxRecord.BlockNum))
+		//		fmt.Println(vmenv.TxRecord)
+		//		switch blockchain := bc.(type) {
+		//		case *BlockChain:
+		//			experiment.CloseConnection(cfg.ExceptionColl) // close database connection
+		//			close(blockchain.quit)                        // close blockchain service when encountered database error
+		//		default:
+		//			os.Exit(1)
+		//		}
+		//	}
+		//}
+	}
 	return receipt, gas, err
 }

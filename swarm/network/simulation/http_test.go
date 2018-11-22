@@ -99,7 +99,7 @@ func sendRunSignal(t *testing.T) {
 	defer func() {
 		err := resp.Body.Close()
 		if err != nil {
-			log.Error("Error closing response body", "err", err)
+			log.Error("ErrorMsg closing response body", "err", err)
 		}
 	}()
 	log.Debug("Signal sent")

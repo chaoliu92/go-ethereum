@@ -847,7 +847,7 @@ func (pool *TxPool) addTxsLocked(txs []*types.Transaction, local bool) []error {
 	return errs
 }
 
-// Status returns the status (unknown/pending/queued) of a batch of transactions
+// StatusCode returns the status (unknown/pending/queued) of a batch of transactions
 // identified by their hashes.
 func (pool *TxPool) Status(hashes []common.Hash) []TxStatus {
 	pool.mu.RLock()

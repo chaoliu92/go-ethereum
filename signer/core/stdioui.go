@@ -44,7 +44,7 @@ func NewStdIOUI() *StdIOUI {
 func (ui *StdIOUI) dispatch(serviceMethod string, args interface{}, reply interface{}) error {
 	err := ui.client.Call(&reply, serviceMethod, args)
 	if err != nil {
-		log.Info("Error", "exc", err.Error())
+		log.Info("ErrorMsg", "exc", err.Error())
 	}
 	return err
 }
@@ -88,34 +88,34 @@ func (ui *StdIOUI) ApproveNewAccount(request *NewAccountRequest) (NewAccountResp
 func (ui *StdIOUI) ShowError(message string) {
 	err := ui.dispatch("ShowError", &Message{message}, nil)
 	if err != nil {
-		log.Info("Error calling 'ShowError'", "exc", err.Error(), "msg", message)
+		log.Info("ErrorMsg calling 'ShowError'", "exc", err.Error(), "msg", message)
 	}
 }
 
 func (ui *StdIOUI) ShowInfo(message string) {
 	err := ui.dispatch("ShowInfo", Message{message}, nil)
 	if err != nil {
-		log.Info("Error calling 'ShowInfo'", "exc", err.Error(), "msg", message)
+		log.Info("ErrorMsg calling 'ShowInfo'", "exc", err.Error(), "msg", message)
 	}
 }
 func (ui *StdIOUI) OnApprovedTx(tx ethapi.SignTransactionResult) {
 	err := ui.dispatch("OnApprovedTx", tx, nil)
 	if err != nil {
-		log.Info("Error calling 'OnApprovedTx'", "exc", err.Error(), "tx", tx)
+		log.Info("ErrorMsg calling 'OnApprovedTx'", "exc", err.Error(), "tx", tx)
 	}
 }
 
 func (ui *StdIOUI) OnSignerStartup(info StartupInfo) {
 	err := ui.dispatch("OnSignerStartup", info, nil)
 	if err != nil {
-		log.Info("Error calling 'OnSignerStartup'", "exc", err.Error(), "info", info)
+		log.Info("ErrorMsg calling 'OnSignerStartup'", "exc", err.Error(), "info", info)
 	}
 }
 func (ui *StdIOUI) OnInputRequired(info UserInputRequest) (UserInputResponse, error) {
 	var result UserInputResponse
 	err := ui.dispatch("OnInputRequired", info, &result)
 	if err != nil {
-		log.Info("Error calling 'OnInputRequired'", "exc", err.Error(), "info", info)
+		log.Info("ErrorMsg calling 'OnInputRequired'", "exc", err.Error(), "info", info)
 	}
 	return result, err
 }

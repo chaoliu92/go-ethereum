@@ -700,7 +700,7 @@ func (c *Client) queryFeed(query *feed.Query, manifestAddressOrDomain string, me
 		} else {
 			errorMessage = string(errorMessageBytes)
 		}
-		return nil, fmt.Errorf("Error retrieving feed updates: %s", errorMessage)
+		return nil, fmt.Errorf("ErrorMsg retrieving feed updates: %s", errorMessage)
 	}
 
 	return res.Body, nil

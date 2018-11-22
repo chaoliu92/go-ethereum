@@ -191,7 +191,7 @@ func (s *Simulation) Close() {
 		defer cancel()
 		err := s.httpSrv.Shutdown(ctx)
 		if err != nil {
-			log.Error("Error shutting down HTTP server!", "err", err)
+			log.Error("ErrorMsg shutting down HTTP server!", "err", err)
 		}
 		close(s.runC)
 	}

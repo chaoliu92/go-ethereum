@@ -74,7 +74,7 @@ func TestNetworkID(t *testing.T) {
 	//set up the network and connect nodes
 	net, err := setupNetwork(numNodes)
 	if err != nil {
-		t.Fatalf("Error setting up network: %v", err)
+		t.Fatalf("ErrorMsg setting up network: %v", err)
 	}
 	defer func() {
 		//shutdown the snapshot network

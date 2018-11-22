@@ -332,7 +332,7 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 	// Handle the message depending on its contents
 	switch {
 	case msg.Code == StatusMsg:
-		// Status messages should never arrive after the handshake
+		// StatusCode messages should never arrive after the handshake
 		return errResp(ErrExtraStatusMsg, "uncontrolled status message")
 
 	// Block header query, collect the requested headers and reply

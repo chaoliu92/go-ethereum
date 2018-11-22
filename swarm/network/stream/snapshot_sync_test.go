@@ -280,7 +280,7 @@ func runSim(conf *synctestConfig, ctx context.Context, sim *simulation.Simulatio
 				os.RemoveAll(gDir)
 				err := globalStore.Close()
 				if err != nil {
-					log.Error("Error closing global store! %v", "err", err)
+					log.Error("ErrorMsg closing global store! %v", "err", err)
 				}
 			}()
 		}
@@ -303,7 +303,7 @@ func runSim(conf *synctestConfig, ctx context.Context, sim *simulation.Simulatio
 						//use the actual localstore
 						item, ok := sim.NodeItem(id, bucketKeyStore)
 						if !ok {
-							return fmt.Errorf("Error accessing localstore")
+							return fmt.Errorf("ErrorMsg accessing localstore")
 						}
 						lstore := item.(*storage.LocalStore)
 						_, err = lstore.Get(ctx, chunk)
@@ -504,7 +504,7 @@ func testSyncingViaDirectSubscribe(t *testing.T, chunkCount int, nodeCount int) 
 						//use the actual localstore
 						item, ok := sim.NodeItem(id, bucketKeyStore)
 						if !ok {
-							return fmt.Errorf("Error accessing localstore")
+							return fmt.Errorf("ErrorMsg accessing localstore")
 						}
 						lstore := item.(*storage.LocalStore)
 						_, err = lstore.Get(ctx, chunk)
@@ -544,7 +544,7 @@ func startSyncing(r *Registry, conf *synctestConfig) (int, error) {
 		subCnt++
 		err = r.RequestSubscription(conf.addrToIDMap[string(conn.Address())], NewStream("SYNC", FormatSyncBinKey(uint8(po)), true), NewRange(0, 0), High)
 		if err != nil {
-			log.Error(fmt.Sprintf("Error in RequestSubsciption! %v", err))
+			log.Error(fmt.Sprintf("ErrorMsg in RequestSubsciption! %v", err))
 			return false
 		}
 		return true

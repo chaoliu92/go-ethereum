@@ -197,7 +197,7 @@ var bindTests = []struct {
 			 mit, err := e.FilterMixed(nil, []common.Address{})
 
 			 res = mit.Next()  // Make sure the iterator has a Next method
-			 err = mit.Error() // Make sure the iterator has an Error method
+			 err = mit.ErrorMsg() // Make sure the iterator has an ErrorMsg method
 			 err = mit.Close() // Make sure the iterator has a Close method
 
 			 fmt.Println(mit.Event.Raw.BlockHash) // Make sure the raw log is contained within the results
@@ -489,7 +489,7 @@ var bindTests = []struct {
 			if res, err := nonexistent.String(nil); err == nil {
 				t.Fatalf("Call succeeded on non-existent contract: %v", res)
 			} else if (err != bind.ErrNoCode) {
-				t.Fatalf("Error mismatch: have %v, want %v", err, bind.ErrNoCode)
+				t.Fatalf("ErrorMsg mismatch: have %v, want %v", err, bind.ErrNoCode)
 			}
 		`,
 	},
@@ -761,7 +761,7 @@ var bindTests = []struct {
 			if sit.Next() {
 				t.Errorf("unexpected simple event found: %+v", sit.Event)
 			}
-			if err = sit.Error(); err != nil {
+			if err = sit.ErrorMsg(); err != nil {
 				t.Fatalf("simple event iteration failed: %v", err)
 			}
 			// Test raising and filtering for an event with no data component
@@ -777,7 +777,7 @@ var bindTests = []struct {
 			defer nit.Close()
 
 			if !nit.Next() {
-				t.Fatalf("nodata log not found: %v", nit.Error())
+				t.Fatalf("nodata log not found: %v", nit.ErrorMsg())
 			}
 			if nit.Event.Number.Uint64() != 314 {
 				t.Errorf("nodata log content mismatch: have %v, want 314", nit.Event.Number)
@@ -785,7 +785,7 @@ var bindTests = []struct {
 			if nit.Next() {
 				t.Errorf("unexpected nodata event found: %+v", nit.Event)
 			}
-			if err = nit.Error(); err != nil {
+			if err = nit.ErrorMsg(); err != nil {
 				t.Fatalf("nodata event iteration failed: %v", err)
 			}
 			// Test raising and filtering for events with dynamic indexed components
@@ -801,7 +801,7 @@ var bindTests = []struct {
 			defer dit.Close()
 
 			if !dit.Next() {
-				t.Fatalf("dynamic log not found: %v", dit.Error())
+				t.Fatalf("dynamic log not found: %v", dit.ErrorMsg())
 			}
 			if dit.Event.NonIndexedString != "Hello" || string(dit.Event.NonIndexedBytes) != "World" ||	dit.Event.IndexedString != common.HexToHash("0x06b3dfaec148fb1bb2b066f10ec285e7c9bf402ab32aa78a5d38e34566810cd2") || dit.Event.IndexedBytes != common.HexToHash("0xf2208c967df089f60420785795c0a9ba8896b0f6f1867fa7f1f12ad6f79c1a18") {
 				t.Errorf("dynamic log content mismatch: have %v, want {'0x06b3dfaec148fb1bb2b066f10ec285e7c9bf402ab32aa78a5d38e34566810cd2, '0xf2208c967df089f60420785795c0a9ba8896b0f6f1867fa7f1f12ad6f79c1a18', 'Hello', 'World'}", dit.Event)
@@ -809,7 +809,7 @@ var bindTests = []struct {
 			if dit.Next() {
 				t.Errorf("unexpected dynamic event found: %+v", dit.Event)
 			}
-			if err = dit.Error(); err != nil {
+			if err = dit.ErrorMsg(); err != nil {
 				t.Fatalf("dynamic event iteration failed: %v", err)
 			}
 			// Test subscribing to an event and raising it afterwards

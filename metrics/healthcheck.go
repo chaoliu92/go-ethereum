@@ -23,7 +23,7 @@ type NilHealthcheck struct{}
 // Check is a no-op.
 func (NilHealthcheck) Check() {}
 
-// Error is a no-op.
+// ErrorMsg is a no-op.
 func (NilHealthcheck) Error() error { return nil }
 
 // Healthy is a no-op.
@@ -44,7 +44,7 @@ func (h *StandardHealthcheck) Check() {
 	h.f(h)
 }
 
-// Error returns the healthcheck's status, which will be nil if it is healthy.
+// ErrorMsg returns the healthcheck's status, which will be nil if it is healthy.
 func (h *StandardHealthcheck) Error() error {
 	return h.err
 }
@@ -55,7 +55,7 @@ func (h *StandardHealthcheck) Healthy() {
 }
 
 // Unhealthy marks the healthcheck as unhealthy.  The error is stored and
-// may be retrieved by the Error method.
+// may be retrieved by the ErrorMsg method.
 func (h *StandardHealthcheck) Unhealthy(err error) {
 	h.err = err
 }

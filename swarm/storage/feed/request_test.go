@@ -36,11 +36,11 @@ func areEqualJSON(s1, s2 string) (bool, error) {
 
 	err := json.Unmarshal([]byte(s1), &o1)
 	if err != nil {
-		return false, fmt.Errorf("Error mashalling string 1 :: %s", err.Error())
+		return false, fmt.Errorf("ErrorMsg mashalling string 1 :: %s", err.Error())
 	}
 	err = json.Unmarshal([]byte(s2), &o2)
 	if err != nil {
-		return false, fmt.Errorf("Error mashalling string 2 :: %s", err.Error())
+		return false, fmt.Errorf("ErrorMsg mashalling string 2 :: %s", err.Error())
 	}
 
 	return reflect.DeepEqual(o1, o2), nil
@@ -61,13 +61,13 @@ func TestEncodingDecodingUpdateRequests(t *testing.T) {
 	// We now encode the create message to simulate we send it over the wire
 	messageRawData, err := firstRequest.MarshalJSON()
 	if err != nil {
-		t.Fatalf("Error encoding first feed update request: %s", err)
+		t.Fatalf("ErrorMsg encoding first feed update request: %s", err)
 	}
 
 	// ... the message arrives and is decoded...
 	var recoveredFirstRequest Request
 	if err := recoveredFirstRequest.UnmarshalJSON(messageRawData); err != nil {
-		t.Fatalf("Error decoding first feed update request: %s", err)
+		t.Fatalf("ErrorMsg decoding first feed update request: %s", err)
 	}
 
 	// ... but verification should fail because it is not signed!
@@ -97,12 +97,12 @@ func TestEncodingDecodingUpdateRequests(t *testing.T) {
 
 	messageRawData, err = request.MarshalJSON()
 	if err != nil {
-		t.Fatalf("Error encoding update request: %s", err)
+		t.Fatalf("ErrorMsg encoding update request: %s", err)
 	}
 
 	equalJSON, err := areEqualJSON(string(messageRawData), expectedJSON)
 	if err != nil {
-		t.Fatalf("Error decoding update request JSON: %s", err)
+		t.Fatalf("ErrorMsg decoding update request JSON: %s", err)
 	}
 	if !equalJSON {
 		t.Fatalf("Received a different JSON message. Expected %s, got %s", expectedJSON, string(messageRawData))
@@ -113,12 +113,12 @@ func TestEncodingDecodingUpdateRequests(t *testing.T) {
 	//Attempt to extract an UpdateRequest out of the encoded message
 	var recoveredRequest Request
 	if err := recoveredRequest.UnmarshalJSON(messageRawData); err != nil {
-		t.Fatalf("Error decoding update request: %s", err)
+		t.Fatalf("ErrorMsg decoding update request: %s", err)
 	}
 
 	//sign the request and see if it matches our predefined signature above.
 	if err := recoveredRequest.Sign(charlie); err != nil {
-		t.Fatalf("Error signing request: %s", err)
+		t.Fatalf("ErrorMsg signing request: %s", err)
 	}
 
 	compareByteSliceToExpectedHex(t, "signature", recoveredRequest.Signature[:], expectedSignature)
@@ -127,7 +127,7 @@ func TestEncodingDecodingUpdateRequests(t *testing.T) {
 	// to alter the signature field.
 	var j updateRequestJSON
 	if err := json.Unmarshal([]byte(expectedJSON), &j); err != nil {
-		t.Fatal("Error unmarshalling test json, check expectedJSON constant")
+		t.Fatal("ErrorMsg unmarshalling test json, check expectedJSON constant")
 	}
 	j.Signature = "Certainly not a signature"
 	corruptMessage, _ := json.Marshal(j) // encode the message with the bad signature
@@ -139,19 +139,19 @@ func TestEncodingDecodingUpdateRequests(t *testing.T) {
 	// Now imagine Bob wants to create an update of his own about the same feed,
 	// signing a message with his private key
 	if err := request.Sign(bob); err != nil {
-		t.Fatalf("Error signing: %s", err)
+		t.Fatalf("ErrorMsg signing: %s", err)
 	}
 
 	// Now Bob encodes the message to send it over the wire...
 	messageRawData, err = request.MarshalJSON()
 	if err != nil {
-		t.Fatalf("Error encoding message:%s", err)
+		t.Fatalf("ErrorMsg encoding message:%s", err)
 	}
 
 	// ... the message arrives to our Swarm node and it is decoded.
 	recoveredRequest = Request{}
 	if err := recoveredRequest.UnmarshalJSON(messageRawData); err != nil {
-		t.Fatalf("Error decoding message:%s", err)
+		t.Fatalf("ErrorMsg decoding message:%s", err)
 	}
 
 	// Before checking what happened with Bob's update, let's see what would happen if we mess
@@ -172,12 +172,12 @@ func TestEncodingDecodingUpdateRequests(t *testing.T) {
 
 	// Reuse object and sign with our friend Charlie's private key
 	if err := recoveredRequest.Sign(charlie); err != nil {
-		t.Fatalf("Error signing with the correct private key: %s", err)
+		t.Fatalf("ErrorMsg signing with the correct private key: %s", err)
 	}
 
 	// And now, Verify should work since this update now belongs to Charlie
 	if err = recoveredRequest.Verify(); err != nil {
-		t.Fatalf("Error verifying that Charlie, can sign a reused request object:%s", err)
+		t.Fatalf("ErrorMsg verifying that Charlie, can sign a reused request object:%s", err)
 	}
 
 	// mess with the lookup key to make sure Verify fails:

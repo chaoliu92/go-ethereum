@@ -52,7 +52,7 @@ func NewNodeIterator(state *StateDB) *NodeIterator {
 
 // Next moves the iterator to the next node, returning whether there are any
 // further nodes. In case of an internal error this method returns false and
-// sets the Error field to the encountered failure.
+// sets the ErrorMsg field to the encountered failure.
 func (it *NodeIterator) Next() bool {
 	// If the iterator failed previously, don't do anything
 	if it.Error != nil {

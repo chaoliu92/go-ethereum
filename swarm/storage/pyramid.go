@@ -62,8 +62,8 @@ import (
 */
 
 var (
-	errLoadingTreeRootChunk = errors.New("LoadTree Error: Could not load root chunk")
-	errLoadingTreeChunk     = errors.New("LoadTree Error: Could not load chunk")
+	errLoadingTreeRootChunk = errors.New("LoadTree ErrorMsg: Could not load root chunk")
+	errLoadingTreeChunk     = errors.New("LoadTree ErrorMsg: Could not load chunk")
 )
 
 const (

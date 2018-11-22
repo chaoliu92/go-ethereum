@@ -334,10 +334,10 @@ func configureNode() {
 			s := scanLine("Please enter the peer's public key: ")
 			b := common.FromHex(s)
 			if b == nil {
-				utils.Fatalf("Error: can not convert hexadecimal string")
+				utils.Fatalf("ErrorMsg: can not convert hexadecimal string")
 			}
 			if pub, err = crypto.UnmarshalPubkey(b); err != nil {
-				utils.Fatalf("Error: invalid peer public key")
+				utils.Fatalf("ErrorMsg: invalid peer public key")
 			}
 		}
 	}
@@ -482,11 +482,11 @@ func sendFilesLoop() {
 		}
 		b, err := ioutil.ReadFile(s)
 		if err != nil {
-			fmt.Printf(">>> Error: %s \n", err)
+			fmt.Printf(">>> ErrorMsg: %s \n", err)
 		} else {
 			h := sendMsg(b)
 			if (h == common.Hash{}) {
-				fmt.Printf(">>> Error: message was not sent \n")
+				fmt.Printf(">>> ErrorMsg: message was not sent \n")
 			} else {
 				timestamp := time.Now().Unix()
 				from := crypto.PubkeyToAddress(asymKey.PublicKey)
@@ -500,7 +500,7 @@ func fileReaderLoop() {
 	watcher1 := shh.GetFilter(symFilterID)
 	watcher2 := shh.GetFilter(asymFilterID)
 	if watcher1 == nil && watcher2 == nil {
-		fmt.Println("Error: neither symmetric nor asymmetric filter is installed")
+		fmt.Println("ErrorMsg: neither symmetric nor asymmetric filter is installed")
 		return
 	}
 
@@ -512,7 +512,7 @@ func fileReaderLoop() {
 		}
 		raw, err := ioutil.ReadFile(s)
 		if err != nil {
-			fmt.Printf(">>> Error: %s \n", err)
+			fmt.Printf(">>> ErrorMsg: %s \n", err)
 		} else {
 			env := whisper.Envelope{Data: raw} // the topic is zero
 			msg := env.Open(watcher1)          // force-open envelope regardless of the topic
@@ -520,7 +520,7 @@ func fileReaderLoop() {
 				msg = env.Open(watcher2)
 			}
 			if msg == nil {
-				fmt.Printf(">>> Error: failed to decrypt the message \n")
+				fmt.Printf(">>> ErrorMsg: failed to decrypt the message \n")
 			} else {
 				printMessageInfo(msg)
 			}
@@ -708,7 +708,7 @@ func requestExpiredMessagesLoop() {
 		} else if len(t) == 0 {
 			bloom = whisper.MakeFullNodeBloom()
 		} else {
-			fmt.Println("Error: topic is invalid, request aborted")
+			fmt.Println("ErrorMsg: topic is invalid, request aborted")
 			continue
 		}
 

@@ -20,6 +20,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
 	"io"
 	"math/big"
 	mrand "math/rand"
@@ -1426,6 +1427,12 @@ func (bc *BlockChain) update() {
 		case <-futureTimer.C:
 			bc.procFutureBlocks()
 		case <-bc.quit:
+			if bc.vmConfig.ExceptionColl != nil || bc.vmConfig.ExceptionGridFSBucket != nil {
+				experiment.CloseConnection(bc.vmConfig.ExceptionColl) // Close database connection
+			}
+			if bc.vmConfig.ExceptionFile != nil {
+				bc.vmConfig.ExceptionFile.Close() // Close file
+			}
 			return
 		}
 	}
@@ -1464,7 +1471,7 @@ Number: %v
 Hash: 0x%x
 %v
 
-Error: %v
+ErrorMsg: %v
 ##############################
 `, bc.chainConfig, block.Number(), block.Hash(), receiptString, err))
 }

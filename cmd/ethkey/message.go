@@ -65,7 +65,7 @@ To sign a message contained in a file, use the --msgfile flag.
 		passphrase := getPassphrase(ctx)
 		key, err := keystore.DecryptKey(keyjson, passphrase)
 		if err != nil {
-			utils.Fatalf("Error decrypting key: %v", err)
+			utils.Fatalf("ErrorMsg decrypting key: %v", err)
 		}
 
 		signature, err := crypto.Sign(signHash(message), key.PrivateKey)

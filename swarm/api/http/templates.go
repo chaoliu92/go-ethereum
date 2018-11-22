@@ -117,7 +117,7 @@ const errorResponse = `{{ define "content" }}
     </div>
 
     <div>
-      <h5>Error code: {{.Code}}</h5>
+      <h5>ErrorMsg code: {{.Code}}</h5>
     </div>
 
     <div class="footer">

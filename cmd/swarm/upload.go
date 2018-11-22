@@ -73,7 +73,7 @@ func upload(ctx *cli.Context) {
 	if !wantManifest {
 		f, err := swarm.Open(file)
 		if err != nil {
-			utils.Fatalf("Error opening file: %s", err)
+			utils.Fatalf("ErrorMsg opening file: %s", err)
 		}
 		defer f.Close()
 		hash, err := client.UploadRaw(f, f.Size, toEncrypt)
@@ -86,7 +86,7 @@ func upload(ctx *cli.Context) {
 
 	stat, err := os.Stat(file)
 	if err != nil {
-		utils.Fatalf("Error opening file: %s", err)
+		utils.Fatalf("ErrorMsg opening file: %s", err)
 	}
 
 	// define a function which either uploads a directory or single file

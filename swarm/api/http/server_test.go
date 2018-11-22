@@ -321,7 +321,7 @@ func TestBzzFeed(t *testing.T) {
 	}
 	updateRequest = &feed.Request{}
 	if err = updateRequest.UnmarshalJSON(b); err != nil {
-		t.Fatalf("Error decoding feed metadata: %s", err)
+		t.Fatalf("ErrorMsg decoding feed metadata: %s", err)
 	}
 	updateRequest.SetData(update2Data)
 	if err = updateRequest.Sign(signer); err != nil {

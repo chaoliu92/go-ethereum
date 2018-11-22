@@ -62,7 +62,7 @@ func TestOverlaySim(t *testing.T) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected Status Code %d, got %d", http.StatusOK, resp.StatusCode)
+		t.Fatalf("Expected StatusCode Code %d, got %d", http.StatusOK, resp.StatusCode)
 	}
 
 	log.Debug("Start mocker")
@@ -81,7 +81,7 @@ func TestOverlaySim(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Fatalf("Expected Status Code %d, got %d, response body %s", http.StatusOK, resp.StatusCode, string(reason))
+		t.Fatalf("Expected StatusCode Code %d, got %d, response body %s", http.StatusOK, resp.StatusCode, string(reason))
 	}
 
 	//variables needed to wait for nodes being up

@@ -102,7 +102,7 @@ type KeyError struct {
 	Err error
 }
 
-// Error implements error.
+// ErrorMsg implements error.
 func (err *KeyError) Error() string {
 	if err.Err == errNotFound {
 		return fmt.Sprintf("missing ENR key %q", err.Key)

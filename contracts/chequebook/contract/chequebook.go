@@ -259,7 +259,7 @@ type ChequebookOverdraftIterator struct {
 
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
+// returned and ErrorMsg() can be queried for the exact failure.
 func (it *ChequebookOverdraftIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
@@ -299,7 +299,7 @@ func (it *ChequebookOverdraftIterator) Next() bool {
 	}
 }
 
-// Error retruned any retrieval or parsing error occurred during filtering.
+// ErrorMsg retruned any retrieval or parsing error occurred during filtering.
 func (it *ChequebookOverdraftIterator) Error() error {
 	return it.fail
 }

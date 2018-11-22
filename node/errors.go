@@ -45,7 +45,7 @@ type DuplicateServiceError struct {
 	Kind reflect.Type
 }
 
-// Error generates a textual representation of the duplicate service error.
+// ErrorMsg generates a textual representation of the duplicate service error.
 func (e *DuplicateServiceError) Error() string {
 	return fmt.Sprintf("duplicate service: %v", e.Kind)
 }
@@ -57,7 +57,7 @@ type StopError struct {
 	Services map[reflect.Type]error
 }
 
-// Error generates a textual representation of the stop error.
+// ErrorMsg generates a textual representation of the stop error.
 func (e *StopError) Error() string {
 	return fmt.Sprintf("server: %v, services: %v", e.Server, e.Services)
 }

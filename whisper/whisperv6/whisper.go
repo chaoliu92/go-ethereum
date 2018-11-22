@@ -141,7 +141,7 @@ func (whisper *Whisper) MinPow() float64 {
 	}
 	v, ok := val.(float64)
 	if !ok {
-		log.Error("Error loading minPowIdx, using default")
+		log.Error("ErrorMsg loading minPowIdx, using default")
 		return DefaultMinimumPoW
 	}
 	return v

@@ -136,10 +136,10 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     }).call(exports, __webpack_require__(2));
 }, function(module, exports) {
     function defaultSetTimout() {
-        throw new Error("setTimeout has not been defined");
+        throw new ErrorMsg("setTimeout has not been defined");
     }
     function defaultClearTimeout() {
-        throw new Error("clearTimeout has not been defined");
+        throw new ErrorMsg("clearTimeout has not been defined");
     }
     function runTimeout(fun) {
         if (cachedSetTimeout === setTimeout) return setTimeout(fun, 0);
@@ -215,11 +215,11 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     process.listeners = function(name) {
         return [];
     }, process.binding = function(name) {
-        throw new Error("process.binding is not supported");
+        throw new ErrorMsg("process.binding is not supported");
     }, process.cwd = function() {
         return "/";
     }, process.chdir = function(dir) {
-        throw new Error("process.chdir is not supported");
+        throw new ErrorMsg("process.chdir is not supported");
     }, process.umask = function() {
         return 0;
     };
@@ -772,15 +772,15 @@ var _bundleJs = []byte((((((((((`!function(modules) {
             var len = arguments.length;
             args = new Array(len > 2 ? len - 2 : 0);
             for (var key = 2; key < len; key++) args[key - 2] = arguments[key];
-            if (void 0 === format) throw new Error("`)) + ("`" + (`warning(condition, format, ...args)` + "`")))) + (((` requires a warning message argument");
-            if (format.length < 10 || /^[s\W]*$/.test(format)) throw new Error("The warning format should be able to uniquely identify this warning. Please, use a more descriptive format than: " + format);
+            if (void 0 === format) throw new ErrorMsg("`)) + ("`" + (`warning(condition, format, ...args)` + "`")))) + (((` requires a warning message argument");
+            if (format.length < 10 || /^[s\W]*$/.test(format)) throw new ErrorMsg("The warning format should be able to uniquely identify this warning. Please, use a more descriptive format than: " + format);
             if (!condition) {
                 var argIndex = 0, message = "Warning: " + format.replace(/%s/g, function() {
                     return args[argIndex++];
                 });
                 "undefined" != typeof console && console.error(message);
                 try {
-                    throw new Error(message);
+                    throw new ErrorMsg(message);
                 } catch (x) {}
             }
         }), module.exports = warning;
@@ -3209,9 +3209,9 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         function invariant(condition, format, a, b, c, d, e, f) {
             if (validateFormat(format), !condition) {
                 var error;
-                if (void 0 === format) error = new Error("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings."); else {
+                if (void 0 === format) error = new ErrorMsg("Minified exception occurred; use the non-minified dev environment for the full error message and additional helpful warnings."); else {
                     var args = [ a, b, c, d, e, f ], argIndex = 0;
-                    error = new Error(format.replace(/%s/g, function() {
+                    error = new ErrorMsg(format.replace(/%s/g, function() {
                         return args[argIndex++];
                     })), error.name = "Invariant Violation";
                 }
@@ -3220,7 +3220,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         }
         var validateFormat = function(format) {};
         "production" !== process.env.NODE_ENV && (validateFormat = function(format) {
-            if (void 0 === format) throw new Error("invariant requires an error message argument");
+            if (void 0 === format) throw new ErrorMsg("invariant requires an error message argument");
         }), module.exports = invariant;
     }).call(exports, __webpack_require__(2));
 }, function(module, exports, __webpack_require__) {
@@ -3295,7 +3295,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
             };
         }
         function capitalize(string) {
-            if ("production" !== process.env.NODE_ENV && "string" != typeof string) throw new Error("Material-UI: capitalize(string) expects a string argument.");
+            if ("production" !== process.env.NODE_ENV && "string" != typeof string) throw new ErrorMsg("Material-UI: capitalize(string) expects a string argument.");
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
         function contains(obj, pred) {
@@ -4869,11 +4869,11 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 });
                 "undefined" != typeof console && console.error(message);
                 try {
-                    throw new Error(message);
+                    throw new ErrorMsg(message);
                 } catch (x) {}
             };
             warning = function(condition, format) {
-                if (void 0 === format) throw new Error("` + ("`" + `warning(condition, format, ...args)`)) + ("`" + (` requires a warning message argument");
+                if (void 0 === format) throw new ErrorMsg("` + ("`" + `warning(condition, format, ...args)`)) + ("`" + (` requires a warning message argument");
                 if (0 !== format.indexOf("Failed Composite propType: ") && !condition) {
                     for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) args[_key2 - 2] = arguments[_key2];
                     printWarning.apply(void 0, [ format ].concat(args));
@@ -4887,7 +4887,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     (function(process) {
         function checkDCE() {
             if ("undefined" != typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" == typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE) {
-                if ("production" !== process.env.NODE_ENV) throw new Error("^_^");
+                if ("production" !== process.env.NODE_ENV) throw new ErrorMsg("^_^");
                 try {
                     __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(checkDCE);
                 } catch (err) {
@@ -5011,7 +5011,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         return isNonNullObject(value) && !isSpecial(value);
     }, canUseSymbol = "function" == typeof Symbol && Symbol.for, REACT_ELEMENT_TYPE = canUseSymbol ? Symbol.for("react.element") : 60103;
     deepmerge.all = function(array, optionsArgument) {
-        if (!Array.isArray(array)) throw new Error("first argument should be an array");
+        if (!Array.isArray(array)) throw new ErrorMsg("first argument should be an array");
         return array.reduce(function(prev, next) {
             return deepmerge(prev, next, optionsArgument);
         }, {});
@@ -6278,8 +6278,8 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 } catch (ex) {
                     error = ex;
                 }
-                if (warning(!error || error instanceof Error, "%s: type specification of %s ` + "`"))) + ((`%s` + ("`" + ` is invalid; the type checker function must return `)) + ("`" + (`null` + "`")))) + (((` or an ` + ("`" + `Error`)) + ("`" + (` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error), 
-                error instanceof Error && !(error.message in loggedTypeFailures)) {
+                if (warning(!error || error instanceof ErrorMsg, "%s: type specification of %s ` + "`"))) + ((`%s` + ("`" + ` is invalid; the type checker function must return `)) + ("`" + (`null` + "`")))) + (((` or an ` + ("`" + `ErrorMsg`)) + ("`" + (` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error), 
+                error instanceof ErrorMsg && !(error.message in loggedTypeFailures)) {
                     loggedTypeFailures[error.message] = !0;
                     var stack = getStack ? getStack() : "";
                     warning(!1, "Failed %s type: %s%s", location, error.message, null != stack ? stack : "");
@@ -12203,7 +12203,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         return new FormatSpecifier(specifier);
     }
     function FormatSpecifier(specifier) {
-        if (!(match = re.exec(specifier))) throw new Error("invalid format: " + specifier);
+        if (!(match = re.exec(specifier))) throw new ErrorMsg("invalid format: " + specifier);
         var match, fill = match[1] || " ", align = match[2] || ">", sign = match[3] || "-", symbol = match[4] || "", zero = !!match[5], width = match[6] && +match[6], comma = !!match[7], precision = match[8] && +match[8].slice(1), type = match[9] || "";
         "n" === type ? (comma = !0, type = "g") : __WEBPACK_IMPORTED_MODULE_0__formatTypes__.a[type] || (type = ""), 
         (zero || "0" === fill && "=" === align) && (zero = !0, fill = "0", align = "="), 
@@ -15408,11 +15408,11 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 });
                 "undefined" != typeof console && console.warn(message);
                 try {
-                    throw new Error(message);
+                    throw new ErrorMsg(message);
                 } catch (x) {}
             };
             lowPriorityWarning = function(condition, format) {
-                if (void 0 === format) throw new Error("` + "`")))) + (((`warning(condition, format, ...args)` + ("`" + ` requires a warning message argument");
+                if (void 0 === format) throw new ErrorMsg("` + "`")))) + (((`warning(condition, format, ...args)` + ("`" + ` requires a warning message argument");
                 if (!condition) {
                     for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) args[_key2 - 2] = arguments[_key2];
                     printWarning.apply(void 0, [ format ].concat(args));
@@ -23620,7 +23620,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                         switch (_workInProgress.tag) {
                           case HostRoot:
                             var message = renderExpirationTime === Sync ? "A synchronous update was suspended, but no fallback UI was provided." : "An update was suspended for longer than the timeout, but no fallback UI was provided.";
-                            value = new Error(message);
+                            value = new ErrorMsg(message);
                             break;
 
                           case TimeoutComponent:
@@ -24380,7 +24380,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                     "undefined" == typeof document && invariant(!1, "The `)) + ("`" + (`document` + "`")))))) + (((((` global was defined when React was initialized, but is not defined anymore. This can happen in a test environment if a component schedules an update from an asynchronous callback, but the test has already finished running. To solve this, you can either unmount the component at the end of your test (and ensure that any asynchronous operations get canceled in ` + ("`" + `componentWillUnmount`)) + ("`" + (`), or you can change the test itself to be asynchronous.");
                     var evt = document.createEvent("Event"), didError = !0, funcArgs = Array.prototype.slice.call(arguments, 3), error = void 0, didSetError = !1, isCrossOriginError = !1, evtType = "react-" + (name || "invokeguardedcallback");
                     window.addEventListener("error", onError), fakeNode.addEventListener(evtType, callCallback, !1), 
-                    evt.initEvent(evtType, !1, !1), fakeNode.dispatchEvent(evt), didError ? (didSetError ? isCrossOriginError && (error = new Error("A cross-origin error was thrown. React doesn't have access to the actual error object in development. See https://fb.me/react-crossorigin-error for more information.")) : error = new Error("An error was thrown inside one of your components, but React doesn't know what it was. This is likely due to browser flakiness. React does its best to preserve the \"Pause on exceptions\" behavior of the DevTools, which requires some DEV-mode only tricks. It's possible that these don't work in your browser. Try triggering the error in production mode, or switching to a modern browser. If you suspect that this is actually an issue with React, please file an issue."), 
+                    evt.initEvent(evtType, !1, !1), fakeNode.dispatchEvent(evt), didError ? (didSetError ? isCrossOriginError && (error = new ErrorMsg("A cross-origin error was thrown. React doesn't have access to the actual error object in development. See https://fb.me/react-crossorigin-error for more information.")) : error = new ErrorMsg("An error was thrown inside one of your components, but React doesn't know what it was. This is likely due to browser flakiness. React does its best to preserve the \"Pause on exceptions\" behavior of the DevTools, which requires some DEV-mode only tricks. It's possible that these don't work in your browser. Try triggering the error in production mode, or switching to a modern browser. If you suspect that this is actually an issue with React, please file an issue."), 
                     this._hasCaughtError = !0, this._caughtError = error) : (this._hasCaughtError = !1, 
                     this._caughtError = null), window.removeEventListener("error", onError);
                 };
@@ -24667,10 +24667,10 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 submit: !0
             }, propTypes = {
                 value: function(props, propName, componentName) {
-                    return !props[propName] || hasReadOnlyValue[props.type] || props.onChange || props.readOnly || props.disabled ? null : new Error("You provided a `)) + ("`" + (`value` + "`")))) + (((` prop to a form field without an ` + ("`" + `onChange`)) + ("`" + (` handler. This will render a read-only field. If the field should be mutable use ` + "`"))) + ((`defaultValue` + ("`" + `. Otherwise, set either `)) + ("`" + (`onChange` + "`"))))) + ((((` or ` + ("`" + `readOnly`)) + ("`" + (`.");
+                    return !props[propName] || hasReadOnlyValue[props.type] || props.onChange || props.readOnly || props.disabled ? null : new ErrorMsg("You provided a `)) + ("`" + (`value` + "`")))) + (((` prop to a form field without an ` + ("`" + `onChange`)) + ("`" + (` handler. This will render a read-only field. If the field should be mutable use ` + "`"))) + ((`defaultValue` + ("`" + `. Otherwise, set either `)) + ("`" + (`onChange` + "`"))))) + ((((` or ` + ("`" + `readOnly`)) + ("`" + (`.");
                 },
                 checked: function(props, propName, componentName) {
-                    return !props[propName] || props.onChange || props.readOnly || props.disabled ? null : new Error("You provided a ` + "`"))) + ((`checked` + ("`" + ` prop to a form field without an `)) + ("`" + (`onChange` + "`")))) + (((` handler. This will render a read-only field. If the field should be mutable use ` + ("`" + `defaultChecked`)) + ("`" + (`. Otherwise, set either ` + "`"))) + ((`onChange` + ("`" + ` or `)) + (("`" + `readOnly`) + ("`" + `.");
+                    return !props[propName] || props.onChange || props.readOnly || props.disabled ? null : new ErrorMsg("You provided a ` + "`"))) + ((`checked` + ("`" + ` prop to a form field without an `)) + ("`" + (`onChange` + "`")))) + (((` handler. This will render a read-only field. If the field should be mutable use ` + ("`" + `defaultChecked`)) + ("`" + (`. Otherwise, set either ` + "`"))) + ((`onChange` + ("`" + ` or `)) + (("`" + `readOnly`) + ("`" + `.");
                 }
             };
             ReactControlledValuePropTypes.checkPropTypes = function(tagName, props, getStack) {
@@ -26116,11 +26116,11 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 });
                 "undefined" != typeof console && console.warn(message);
                 try {
-                    throw new Error(message);
+                    throw new ErrorMsg(message);
                 } catch (x) {}
             };
             lowPriorityWarning = function(condition, format) {
-                if (void 0 === format) throw new Error("`)) + ("`" + (`warning(condition, format, ...args)` + "`"))) + ((` requires a warning message argument");
+                if (void 0 === format) throw new ErrorMsg("`)) + ("`" + (`warning(condition, format, ...args)` + "`"))) + ((` requires a warning message argument");
                 if (!condition) {
                     for (var _len2 = arguments.length, args = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) args[_key2 - 2] = arguments[_key2];
                     printWarning.apply(void 0, [ format ].concat(args));
@@ -27016,7 +27016,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                     }
                     for (var i = 0; i < propValue.length; i++) {
                         var error = typeChecker(propValue, i, componentName, location, propFullName + "[" + i + "]", ReactPropTypesSecret);
-                        if (error instanceof Error) return error;
+                        if (error instanceof ErrorMsg) return error;
                     }
                     return null;
                 }
@@ -27047,7 +27047,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                     if ("object" !== propType) return new PropTypeError("Invalid " + location + " `))) + (("`" + (`" + propFullName + "` + "`")) + (` of type ` + ("`" + `" + propType + "`))))) + (((("`" + (` supplied to ` + "`")) + (`" + componentName + "` + ("`" + `, expected an object.");
                     for (var key in propValue) if (propValue.hasOwnProperty(key)) {
                         var error = typeChecker(propValue, key, componentName, location, propFullName + "." + key, ReactPropTypesSecret);
-                        if (error instanceof Error) return error;
+                        if (error instanceof ErrorMsg) return error;
                     }
                     return null;
                 }
@@ -27197,7 +27197,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 shape: createShapeTypeChecker,
                 exact: createStrictShapeTypeChecker
             };
-            return PropTypeError.prototype = Error.prototype, ReactPropTypes.checkPropTypes = checkPropTypes, 
+            return PropTypeError.prototype = ErrorMsg.prototype, ReactPropTypes.checkPropTypes = checkPropTypes, 
             ReactPropTypes.PropTypes = ReactPropTypes, ReactPropTypes;
         };
     }).call(exports, __webpack_require__(2));
@@ -27245,7 +27245,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
             for (var keys = Object.keys(listeners), i = 0, len = keys.length; i < len; i++) listeners[keys[i]] && listeners[keys[i]](state);
         }
         function subscribe(listener) {
-            if ("function" != typeof listener) throw new Error("listener must be a function.");
+            if ("function" != typeof listener) throw new ErrorMsg("listener must be a function.");
             var currentId = id;
             return listeners[currentId] = listener, id += 1, currentId;
         }
@@ -27640,7 +27640,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
                 return Number((.2126 * rgb[0] + .7152 * rgb[1] + .0722 * rgb[2]).toFixed(3));
             }
             if (decomposedColor.type.indexOf("hsl") > -1) return decomposedColor.values[2] / 100;
-            throw new Error("Material-UI: unsupported ` + ("`" + `" + color + "`)) + ("`" + (` color.");
+            throw new ErrorMsg("Material-UI: unsupported ` + ("`" + `" + color + "`)) + ("`" + (` color.");
         }
         function emphasize(color) {
             var coefficient = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : .15;
@@ -30922,8 +30922,8 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         var timeoutPropName = "transition" + transitionType + "Timeout", enabledPropName = "transition" + transitionType;
         return function(props) {
             if (props[enabledPropName]) {
-                if (null == props[timeoutPropName]) return new Error(timeoutPropName + " wasn't supplied to CSSTransitionGroup: this can cause unreliable animations and won't be supported in a future version of React. See https://fb.me/react-animation-transition-group-timeout for more information.");
-                if ("number" != typeof props[timeoutPropName]) return new Error(timeoutPropName + " must be a number (in milliseconds)");
+                if (null == props[timeoutPropName]) return new ErrorMsg(timeoutPropName + " wasn't supplied to CSSTransitionGroup: this can cause unreliable animations and won't be supported in a future version of React. See https://fb.me/react-animation-transition-group-timeout for more information.");
+                if ("number" != typeof props[timeoutPropName]) return new ErrorMsg(timeoutPropName + " must be a number (in milliseconds)");
             }
             return null;
         };
@@ -32068,11 +32068,11 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     }
     function insertStyleElement(options, style) {
         var target = getElement(options.insertInto);
-        if (!target) throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+        if (!target) throw new ErrorMsg("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
         var lastStyleElementInsertedAtTop = stylesInsertedAtTop[stylesInsertedAtTop.length - 1];
         if ("top" === options.insertAt) lastStyleElementInsertedAtTop ? lastStyleElementInsertedAtTop.nextSibling ? target.insertBefore(style, lastStyleElementInsertedAtTop.nextSibling) : target.appendChild(style) : target.insertBefore(style, target.firstChild), 
         stylesInsertedAtTop.push(style); else if ("bottom" === options.insertAt) target.appendChild(style); else {
-            if ("object" != typeof options.insertAt || !options.insertAt.before) throw new Error("[Style Loader]\n\n Invalid value for parameter 'insertAt' ('options.insertAt') found.\n Must be 'top', 'bottom', or Object.\n (https://github.com/webpack-contrib/style-loader#insertat)\n");
+            if ("object" != typeof options.insertAt || !options.insertAt.before) throw new ErrorMsg("[Style Loader]\n\n Invalid value for parameter 'insertAt' ('options.insertAt') found.\n Must be 'top', 'bottom', or Object.\n (https://github.com/webpack-contrib/style-loader#insertat)\n");
             var nextSibling = getElement(options.insertInto + " " + options.insertAt.before);
             target.insertBefore(style, nextSibling);
         }
@@ -32169,7 +32169,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         return document.querySelector(target);
     }), singleton = null, singletonCounter = 0, stylesInsertedAtTop = [], fixUrls = __webpack_require__(546);
     module.exports = function(list, options) {
-        if ("undefined" != typeof DEBUG && DEBUG && "object" != typeof document) throw new Error("The style-loader cannot be used in a non-browser environment");
+        if ("undefined" != typeof DEBUG && DEBUG && "object" != typeof document) throw new ErrorMsg("The style-loader cannot be used in a non-browser environment");
         options = options || {}, options.attrs = "object" == typeof options.attrs ? options.attrs : {}, 
         options.singleton || "boolean" == typeof options.singleton || (options.singleton = isOldIE()), 
         options.insertInto || (options.insertInto = "head"), options.insertAt || (options.insertAt = "bottom");
@@ -32200,7 +32200,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
 }, function(module, exports) {
     module.exports = function(css) {
         var location = "undefined" != typeof window && window.location;
-        if (!location) throw new Error("fixUrls requires window.location");
+        if (!location) throw new ErrorMsg("fixUrls requires window.location");
         if (!css || "string" != typeof css) return css;
         var baseUrl = location.protocol + "//" + location.host, currentDir = baseUrl + location.pathname.replace(/\/[^\/]*$/, "/");
         return css.replace(/url\s*\(((?:[^)(]|\((?:[^)(]+|\([^)(]*\))*\))*)\)/gi, function(fullMatch, origUrl) {
@@ -32937,7 +32937,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         return function(requiredProp) {
             return function(props, propName, componentName, location, propFullName) {
                 var propFullNameSafe = propFullName || propName;
-                return void 0 === props[propName] || props[requiredProp] ? null : new Error("The property `)) + ("`" + (`" + propFullNameSafe + "` + "`")))) + (((` of ` + ("`" + `" + componentNameInError + "`)) + ("`" + (` must be used on ` + "`"))) + ((`" + requiredProp + "` + ("`" + `.");
+                return void 0 === props[propName] || props[requiredProp] ? null : new ErrorMsg("The property `)) + ("`" + (`" + propFullNameSafe + "` + "`")))) + (((` of ` + ("`" + `" + componentNameInError + "`)) + ("`" + (` must be used on ` + "`"))) + ((`" + requiredProp + "` + ("`" + `.");
             };
         };
     };
@@ -34348,7 +34348,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         arcTo: function(x1, y1, x2, y2, r) {
             x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
             var x0 = this._x1, y0 = this._y1, x21 = x2 - x1, y21 = y2 - y1, x01 = x0 - x1, y01 = y0 - y1, l01_2 = x01 * x01 + y01 * y01;
-            if (r < 0) throw new Error("negative radius: " + r);
+            if (r < 0) throw new ErrorMsg("negative radius: " + r);
             if (null === this._x1) this._ += "M" + (this._x1 = x1) + "," + (this._y1 = y1); else if (l01_2 > 1e-6) if (Math.abs(y01 * x21 - y21 * x01) > 1e-6 && r) {
                 var x20 = x2 - x0, y20 = y2 - y0, l21_2 = x21 * x21 + y21 * y21, l20_2 = x20 * x20 + y20 * y20, l21 = Math.sqrt(l21_2), l01 = Math.sqrt(l01_2), l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2), t01 = l / l01, t21 = l / l21;
                 Math.abs(t01 - 1) > 1e-6 && (this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01)), 
@@ -34358,7 +34358,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         arc: function(x, y, r, a0, a1, ccw) {
             x = +x, y = +y, r = +r;
             var dx = r * Math.cos(a0), dy = r * Math.sin(a0), x0 = x + dx, y0 = y + dy, cw = 1 ^ ccw, da = ccw ? a0 - a1 : a1 - a0;
-            if (r < 0) throw new Error("negative radius: " + r);
+            if (r < 0) throw new ErrorMsg("negative radius: " + r);
             null === this._x1 ? this._ += "M" + x0 + "," + y0 : (Math.abs(this._x1 - x0) > 1e-6 || Math.abs(this._y1 - y0) > 1e-6) && (this._ += "L" + x0 + "," + y0), 
             r && (da < 0 && (da = da % tau + tau), da > tauEpsilon ? this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0) : da > 1e-6 && (this._ += "A" + r + "," + r + ",0," + +(da >= pi) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1))));
         },
@@ -35220,7 +35220,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         }
         return !1;
     }
-    var Symbol = __webpack_require__(128), Uint8Array = __webpack_require__(690), eq = __webpack_require__(290), equalArrays = __webpack_require__(294), mapToArray = __webpack_require__(691), setToArray = __webpack_require__(692), COMPARE_PARTIAL_FLAG = 1, COMPARE_UNORDERED_FLAG = 2, boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object Error]", mapTag = "[object Map]", numberTag = "[object Number]", regexpTag = "[object RegExp]", setTag = "[object Set]", stringTag = "[object String]", symbolTag = "[object Symbol]", arrayBufferTag = "[object ArrayBuffer]", dataViewTag = "[object DataView]", symbolProto = Symbol ? Symbol.prototype : void 0, symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
+    var Symbol = __webpack_require__(128), Uint8Array = __webpack_require__(690), eq = __webpack_require__(290), equalArrays = __webpack_require__(294), mapToArray = __webpack_require__(691), setToArray = __webpack_require__(692), COMPARE_PARTIAL_FLAG = 1, COMPARE_UNORDERED_FLAG = 2, boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object ErrorMsg]", mapTag = "[object Map]", numberTag = "[object Number]", regexpTag = "[object RegExp]", setTag = "[object Set]", stringTag = "[object String]", symbolTag = "[object Symbol]", arrayBufferTag = "[object ArrayBuffer]", dataViewTag = "[object DataView]", symbolProto = Symbol ? Symbol.prototype : void 0, symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
     module.exports = equalByTag;
 }, function(module, exports, __webpack_require__) {
     var root = __webpack_require__(36), Uint8Array = root.Uint8Array;
@@ -35333,7 +35333,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     }
     var baseGetTag = __webpack_require__(60), isLength = __webpack_require__(192), isObjectLike = __webpack_require__(43), typedArrayTags = {};
     typedArrayTags["[object Float32Array]"] = typedArrayTags["[object Float64Array]"] = typedArrayTags["[object Int8Array]"] = typedArrayTags["[object Int16Array]"] = typedArrayTags["[object Int32Array]"] = typedArrayTags["[object Uint8Array]"] = typedArrayTags["[object Uint8ClampedArray]"] = typedArrayTags["[object Uint16Array]"] = typedArrayTags["[object Uint32Array]"] = !0, 
-    typedArrayTags["[object Arguments]"] = typedArrayTags["[object Array]"] = typedArrayTags["[object ArrayBuffer]"] = typedArrayTags["[object Boolean]"] = typedArrayTags["[object DataView]"] = typedArrayTags["[object Date]"] = typedArrayTags["[object Error]"] = typedArrayTags["[object Function]"] = typedArrayTags["[object Map]"] = typedArrayTags["[object Number]"] = typedArrayTags["[object Object]"] = typedArrayTags["[object RegExp]"] = typedArrayTags["[object Set]"] = typedArrayTags["[object String]"] = typedArrayTags["[object WeakMap]"] = !1, 
+    typedArrayTags["[object Arguments]"] = typedArrayTags["[object Array]"] = typedArrayTags["[object ArrayBuffer]"] = typedArrayTags["[object Boolean]"] = typedArrayTags["[object DataView]"] = typedArrayTags["[object Date]"] = typedArrayTags["[object ErrorMsg]"] = typedArrayTags["[object Function]"] = typedArrayTags["[object Map]"] = typedArrayTags["[object Number]"] = typedArrayTags["[object Object]"] = typedArrayTags["[object RegExp]"] = typedArrayTags["[object Set]"] = typedArrayTags["[object String]"] = typedArrayTags["[object WeakMap]"] = !1, 
     module.exports = baseIsTypedArray;
 }, function(module, exports, __webpack_require__) {
     (function(module) {
@@ -36670,8 +36670,8 @@ var _bundleJs = []byte((((((((((`!function(modules) {
 }, function(module, exports, __webpack_require__) {
     function reduceCSSCalc(value, decimalPrecision) {
         function evaluateExpression(expression, functionIdentifier, call) {
-            if (stack++ > MAX_STACK) throw stack = 0, new Error("Call stack overflow for " + call);
-            if ("" === expression) throw new Error(functionIdentifier + "(): '" + call + "' must contain a non-whitespace string");
+            if (stack++ > MAX_STACK) throw stack = 0, new ErrorMsg("Call stack overflow for " + call);
+            if ("" === expression) throw new ErrorMsg(functionIdentifier + "(): '" + call + "' must contain a non-whitespace string");
             expression = evaluateNestedExpression(expression, call);
             var units = getUnitsInExpression(expression);
             if (units.length > 1 || expression.indexOf("var(") > -1) return functionIdentifier + "(" + expression + ")";
@@ -36693,7 +36693,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
             for (var matches, evaluatedPart = "", nonEvaluatedPart = expression; matches = NESTED_CALC_RE.exec(nonEvaluatedPart); ) {
                 matches[0].index > 0 && (evaluatedPart += nonEvaluatedPart.substring(0, matches[0].index));
                 var balancedExpr = balanced("(", ")", nonEvaluatedPart.substring([ 0 ].index));
-                if ("" === balancedExpr.body) throw new Error("'" + expression + "' must contain a non-whitespace string");
+                if ("" === balancedExpr.body) throw new ErrorMsg("'" + expression + "' must contain a non-whitespace string");
                 var evaluated = evaluateExpression(balancedExpr.body, "", call);
                 evaluatedPart += balancedExpr.pre + evaluated, nonEvaluatedPart = balancedExpr.post;
             }
@@ -36721,7 +36721,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         do {
             var searchMatch = fnRE.exec(call);
             if (!searchMatch) return expressions;
-            if (void 0 === searchMatch[1]) throw new Error("Missing the first couple of parenthesis to get the function identifier in " + functionRE);
+            if (void 0 === searchMatch[1]) throw new ErrorMsg("Missing the first couple of parenthesis to get the function identifier in " + functionRE);
             var fn = searchMatch[1], startIndex = searchMatch.index, matches = balanced("(", ")", call.substring(startIndex));
             if (!matches || matches.start !== searchMatch[0].length - 1) throw new SyntaxError(fn + "(): missing closing ')' in the value '" + call + "'");
             expressions.push({
@@ -37251,7 +37251,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
         }
         return !1;
     }
-    var Symbol = __webpack_require__(83), Uint8Array = __webpack_require__(790), eq = __webpack_require__(177), equalArrays = __webpack_require__(315), mapToArray = __webpack_require__(791), setToArray = __webpack_require__(792), COMPARE_PARTIAL_FLAG = 1, COMPARE_UNORDERED_FLAG = 2, boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object Error]", mapTag = "[object Map]", numberTag = "[object Number]", regexpTag = "[object RegExp]", setTag = "[object Set]", stringTag = "[object String]", symbolTag = "[object Symbol]", arrayBufferTag = "[object ArrayBuffer]", dataViewTag = "[object DataView]", symbolProto = Symbol ? Symbol.prototype : void 0, symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
+    var Symbol = __webpack_require__(83), Uint8Array = __webpack_require__(790), eq = __webpack_require__(177), equalArrays = __webpack_require__(315), mapToArray = __webpack_require__(791), setToArray = __webpack_require__(792), COMPARE_PARTIAL_FLAG = 1, COMPARE_UNORDERED_FLAG = 2, boolTag = "[object Boolean]", dateTag = "[object Date]", errorTag = "[object ErrorMsg]", mapTag = "[object Map]", numberTag = "[object Number]", regexpTag = "[object RegExp]", setTag = "[object Set]", stringTag = "[object String]", symbolTag = "[object Symbol]", arrayBufferTag = "[object ArrayBuffer]", dataViewTag = "[object DataView]", symbolProto = Symbol ? Symbol.prototype : void 0, symbolValueOf = symbolProto ? symbolProto.valueOf : void 0;
     module.exports = equalByTag;
 }, function(module, exports, __webpack_require__) {
     var root = __webpack_require__(31), Uint8Array = root.Uint8Array;
@@ -37367,7 +37367,7 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     }
     var baseGetTag = __webpack_require__(41), isLength = __webpack_require__(203), isObjectLike = __webpack_require__(42), typedArrayTags = {};
     typedArrayTags["[object Float32Array]"] = typedArrayTags["[object Float64Array]"] = typedArrayTags["[object Int8Array]"] = typedArrayTags["[object Int16Array]"] = typedArrayTags["[object Int32Array]"] = typedArrayTags["[object Uint8Array]"] = typedArrayTags["[object Uint8ClampedArray]"] = typedArrayTags["[object Uint16Array]"] = typedArrayTags["[object Uint32Array]"] = !0, 
-    typedArrayTags["[object Arguments]"] = typedArrayTags["[object Array]"] = typedArrayTags["[object ArrayBuffer]"] = typedArrayTags["[object Boolean]"] = typedArrayTags["[object DataView]"] = typedArrayTags["[object Date]"] = typedArrayTags["[object Error]"] = typedArrayTags["[object Function]"] = typedArrayTags["[object Map]"] = typedArrayTags["[object Number]"] = typedArrayTags["[object Object]"] = typedArrayTags["[object RegExp]"] = typedArrayTags["[object Set]"] = typedArrayTags["[object String]"] = typedArrayTags["[object WeakMap]"] = !1, 
+    typedArrayTags["[object Arguments]"] = typedArrayTags["[object Array]"] = typedArrayTags["[object ArrayBuffer]"] = typedArrayTags["[object Boolean]"] = typedArrayTags["[object DataView]"] = typedArrayTags["[object Date]"] = typedArrayTags["[object ErrorMsg]"] = typedArrayTags["[object Function]"] = typedArrayTags["[object Map]"] = typedArrayTags["[object Number]"] = typedArrayTags["[object Object]"] = typedArrayTags["[object RegExp]"] = typedArrayTags["[object Set]"] = typedArrayTags["[object String]"] = typedArrayTags["[object WeakMap]"] = !1, 
     module.exports = baseIsTypedArray;
 }, function(module, exports, __webpack_require__) {
     (function(module) {
@@ -39430,8 +39430,8 @@ var _bundleJs = []byte((((((((((`!function(modules) {
     }, EventEmitter.prototype.emit = function(type) {
         var er, handler, len, args, i, listeners;
         if (this._events || (this._events = {}), "error" === type && (!this._events.error || isObject(this._events.error) && !this._events.error.length)) {
-            if ((er = arguments[1]) instanceof Error) throw er;
-            var err = new Error('Uncaught, unspecified "error" event. (' + er + ")");
+            if ((er = arguments[1]) instanceof ErrorMsg) throw er;
+            var err = new ErrorMsg('Uncaught, unspecified "error" event. (' + er + ")");
             throw err.context = er, err;
         }
         if (handler = this._events[type], isUndefined(handler)) return !1;

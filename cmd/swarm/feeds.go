@@ -44,13 +44,13 @@ func getTopic(ctx *cli.Context) (topic feed.Topic) {
 	if relatedTopic != "" {
 		relatedTopicBytes, err = hexutil.Decode(relatedTopic)
 		if err != nil {
-			utils.Fatalf("Error parsing topic: %s", err)
+			utils.Fatalf("ErrorMsg parsing topic: %s", err)
 		}
 	}
 
 	topic, err = feed.NewTopic(name, relatedTopicBytes)
 	if err != nil {
-		utils.Fatalf("Error parsing topic: %s", err)
+		utils.Fatalf("ErrorMsg parsing topic: %s", err)
 	}
 	return topic
 }
@@ -70,7 +70,7 @@ func feedCreateManifest(ctx *cli.Context) {
 
 	manifestAddress, err := client.CreateFeedWithManifest(newFeedUpdateRequest)
 	if err != nil {
-		utils.Fatalf("Error creating feed manifest: %s", err.Error())
+		utils.Fatalf("ErrorMsg creating feed manifest: %s", err.Error())
 		return
 	}
 	fmt.Println(manifestAddress) // output manifest address to the user in a single line (useful for other commands to pick up)
@@ -96,7 +96,7 @@ func feedUpdate(ctx *cli.Context) {
 
 	data, err := hexutil.Decode(args[0])
 	if err != nil {
-		utils.Fatalf("Error parsing data: %s", err.Error())
+		utils.Fatalf("ErrorMsg parsing data: %s", err.Error())
 		return
 	}
 
@@ -113,7 +113,7 @@ func feedUpdate(ctx *cli.Context) {
 	// Retrieve a feed update request
 	updateRequest, err = client.GetFeedRequest(query, manifestAddressOrDomain)
 	if err != nil {
-		utils.Fatalf("Error retrieving feed status: %s", err.Error())
+		utils.Fatalf("ErrorMsg retrieving feed status: %s", err.Error())
 	}
 
 	// set the new data
@@ -121,13 +121,13 @@ func feedUpdate(ctx *cli.Context) {
 
 	// sign update
 	if err = updateRequest.Sign(signer); err != nil {
-		utils.Fatalf("Error signing feed update: %s", err.Error())
+		utils.Fatalf("ErrorMsg signing feed update: %s", err.Error())
 	}
 
 	// post update
 	err = client.UpdateFeed(updateRequest)
 	if err != nil {
-		utils.Fatalf("Error updating feed: %s", err.Error())
+		utils.Fatalf("ErrorMsg updating feed: %s", err.Error())
 		return
 	}
 }
@@ -148,12 +148,12 @@ func feedInfo(ctx *cli.Context) {
 
 	metadata, err := client.GetFeedRequest(query, manifestAddressOrDomain)
 	if err != nil {
-		utils.Fatalf("Error retrieving feed metadata: %s", err.Error())
+		utils.Fatalf("ErrorMsg retrieving feed metadata: %s", err.Error())
 		return
 	}
 	encodedMetadata, err := metadata.MarshalJSON()
 	if err != nil {
-		utils.Fatalf("Error encoding metadata to JSON for display:%s", err)
+		utils.Fatalf("ErrorMsg encoding metadata to JSON for display:%s", err)
 	}
 	fmt.Println(string(encodedMetadata))
 }

@@ -30,7 +30,7 @@ type PeerEvent struct {
 	NodeID enode.ID
 	// Event is the event that is caught.
 	Event *p2p.PeerEvent
-	// Error is the error that may have happened during event watching.
+	// ErrorMsg is the error that may have happened during event watching.
 	Error error
 }
 

@@ -249,7 +249,7 @@ func (ui *CommandlineUI) ApproveNewAccount(request *NewAccountRequest) (NewAccou
 
 // ShowError displays error message to user
 func (ui *CommandlineUI) ShowError(message string) {
-	fmt.Printf("-------- Error message from Clef-----------\n")
+	fmt.Printf("-------- ErrorMsg message from Clef-----------\n")
 	fmt.Println(message)
 	fmt.Printf("-------------------------------------------\n")
 }

@@ -86,7 +86,7 @@ type rpcRequest struct {
 	err      Error // invalid batch element
 }
 
-// Error wraps RPC errors, which contain an error code in addition to the message.
+// ErrorMsg wraps RPC errors, which contain an error code in addition to the message.
 type Error interface {
 	Error() string  // returns the message
 	ErrorCode() int // returns the code

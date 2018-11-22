@@ -63,7 +63,7 @@ func newTrezorDriver(logger log.Logger) driver {
 	}
 }
 
-// Status implements accounts.Wallet, always whether the Trezor is opened, closed
+// StatusCode implements accounts.Wallet, always whether the Trezor is opened, closed
 // or whether the Ethereum app was not started on it.
 func (w *trezorDriver) Status() (string, error) {
 	if w.failure != nil {
