@@ -13,7 +13,7 @@ import (
 var (
 	ExceptionFile  = "/Volumes/Data/Ethereum/20181115/exception"
 	DatabaseURL    = "mongodb://localhost:27017"
-	DatabaseName   = "experiment_fastsync"
+	DatabaseName   = "experiment"
 	CollectionName = "exceptions"
 	BucketName     = "exception_bucket"
 )
