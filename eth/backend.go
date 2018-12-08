@@ -149,7 +149,7 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		}
 		rawdb.WriteDatabaseVersion(chainDb, core.BlockChainVersion)
 	}
-	// Create exception recording file
+	// Setup mongodb connections (collection and GridFS)
 	coll, bucket, err := experiment.Collections()
 	if err != nil {
 		return nil, err

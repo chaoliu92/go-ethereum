@@ -13,7 +13,7 @@ import (
 var (
 	ExceptionFile  = "/Volumes/Data/Ethereum/20181115/exception"
 	DatabaseURL    = "mongodb://localhost:27017"
-	DatabaseName   = "experiment"
+	DatabaseName   = "experiment_fastsync"
 	CollectionName = "exceptions"
 	BucketName     = "exception_bucket"
 )
@@ -82,6 +82,19 @@ func (tx *TxRecord) NewTrace() *Trace {
 	trace.Steps = make([]*OneStep, 0)
 	tx.Traces = append(tx.Traces, trace)
 	return trace
+}
+
+func (tx *TxRecord) ReleaseInternal() {
+	for i, p := range tx.Traces {
+		p.ReleaseInternal() // mark each trace step pointer as nil (for garbage collection)
+		tx.Traces[i] = nil  // mark each trace pointer as nil (for garbage collection)
+	}
+}
+
+func (t *Trace) ReleaseInternal() {
+	for i := range t.Steps {
+		t.Steps[i] = nil // mark trace step pointer as nil (for garbage collection)
+	}
 }
 
 func CheckException(err error) (exception string, kind uint64) {

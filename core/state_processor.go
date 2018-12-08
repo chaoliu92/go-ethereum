@@ -172,19 +172,11 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 			fmt.Println(vmenv.TxRecord)
 			os.Exit(1)
 		}
-		//	} else {
-		//		log.ErrorMsg(fmt.Sprintf("MongoDB error, %s", err.ErrorMsg()))
-		//		log.ErrorMsg(string(vmenv.TxRecord.BlockNum))
-		//		fmt.Println(vmenv.TxRecord)
-		//		switch blockchain := bc.(type) {
-		//		case *BlockChain:
-		//			experiment.CloseConnection(cfg.ExceptionColl) // close database connection
-		//			close(blockchain.quit)                        // close blockchain service when encountered database error
-		//		default:
-		//			os.Exit(1)
-		//		}
-		//	}
-		//}
 	}
+
+	// For garbage collection
+	vmenv.TxRecord.ReleaseInternal()
+	vmenv.TxRecord = nil
+
 	return receipt, gas, err
 }
