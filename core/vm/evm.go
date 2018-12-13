@@ -17,8 +17,13 @@
 package vm
 
 import (
+	"context"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/experiment"
+	"github.com/ethereum/go-ethereum/log"
 	"math/big"
+	"os"
 	"sync/atomic"
 	"time"
 
@@ -128,7 +133,7 @@ type EVM struct {
 	callGasTemp uint64
 
 	// transaction record for exception experiment
-	TxRecord *experiment.TxRecord
+	TxRecord *experiment.ExceptionalTx
 }
 
 // NewEVM returns a new EVM. The returned EVM is not thread safe and should
@@ -184,10 +189,42 @@ func (evm *EVM) Interpreter() Interpreter {
 // execution error or failed value transfer.
 func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas uint64, value *big.Int, trace *experiment.Trace) (ret []byte, leftOverGas uint64, err error) {
 	// Set up env values for trace record
-	if trace != nil {
-		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth is set in function run(), here we preset the correct value
+	if trace != nil { // there are cases where trace is nil
+		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth will be added by one in function run(), here we preset the correct value
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
+		trace.Value = value.String()
+		trace.Input = hexutil.Encode(input) // contract code as input
+		trace.GasLimit = gas
+		trace.GasPrice = evm.GasPrice.String()
+
+		// record transaction info (both internal and external)
+		txInfo := &experiment.TxInfo{
+			BlockNum:      evm.TxRecord.BlockNum,
+			TxIndex:       evm.TxRecord.TxIndex,
+			TxHash:        evm.TxRecord.TxHash,
+			From:          trace.From,
+			To:            trace.To,
+			Value:         trace.Value,
+			Input:         trace.Input,
+			GasPrice:      trace.GasPrice,
+			GasLimit:      trace.GasLimit,
+			CreateAddress: "",
+		}
+		if len(evm.TxRecord.Traces) == 1 {
+			txInfo.External = true
+			txInfo.Nonce = evm.StateDB.GetNonce(caller.Address()) - 1
+		} else {
+			txInfo.External = false
+			txInfo.Nonce = evm.StateDB.GetNonce(caller.Address())
+		}
+
+		if _, err := evm.vmConfig.TxColl.InsertOne(context.Background(), *txInfo); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			fmt.Println(txInfo)
+			os.Exit(1)
+		}
+		txInfo = nil // mark for garbage collection
 	}
 
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
@@ -262,10 +299,41 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 // CallCode differs from Call in the sense that it executes the given address'
 // code with the caller as context.
 func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, gas uint64, value *big.Int, trace *experiment.Trace) (ret []byte, leftOverGas uint64, err error) {
-	if trace != nil {
-		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth is set in function run(), here we preset the correct value
+	if trace != nil { // there are cases where trace is nil
+		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth will be added by one in function run(), here we preset the correct value
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
+		trace.Value = value.String()
+		trace.Input = hexutil.Encode(input) // contract code as input
+		trace.GasLimit = gas
+		trace.GasPrice = evm.GasPrice.String()
+
+		// record transaction info (both internal and external)
+		txInfo := &experiment.TxInfo{
+			BlockNum:      evm.TxRecord.BlockNum,
+			TxIndex:       evm.TxRecord.TxIndex,
+			Nonce:         evm.StateDB.GetNonce(caller.Address()),
+			TxHash:        evm.TxRecord.TxHash,
+			From:          trace.From,
+			To:            trace.To,
+			Value:         trace.Value,
+			Input:         trace.Input,
+			GasPrice:      trace.GasPrice,
+			GasLimit:      trace.GasLimit,
+			CreateAddress: "",
+		}
+		if len(evm.TxRecord.Traces) == 1 {
+			txInfo.External = true
+		} else {
+			txInfo.External = false
+		}
+
+		if _, err := evm.vmConfig.TxColl.InsertOne(context.Background(), *txInfo); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			fmt.Println(txInfo)
+			os.Exit(1)
+		}
+		txInfo = nil // mark for garbage collection
 	}
 
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
@@ -308,10 +376,41 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 // DelegateCall differs from CallCode in the sense that it executes the given address'
 // code with the caller as context and the caller is set to the caller of the caller.
 func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []byte, gas uint64, trace *experiment.Trace) (ret []byte, leftOverGas uint64, err error) {
-	if trace != nil {
-		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth is set in function run(), here we preset the correct value
+	if trace != nil { // there are cases where trace is nil
+		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth will be added by one in function run(), here we preset the correct value
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
+		trace.Value = "0"
+		trace.Input = hexutil.Encode(input) // contract code as input
+		trace.GasLimit = gas
+		trace.GasPrice = evm.GasPrice.String()
+
+		// record transaction info (both internal and external)
+		txInfo := &experiment.TxInfo{
+			BlockNum:      evm.TxRecord.BlockNum,
+			TxIndex:       evm.TxRecord.TxIndex,
+			Nonce:         evm.StateDB.GetNonce(caller.Address()),
+			TxHash:        evm.TxRecord.TxHash,
+			From:          trace.From,
+			To:            trace.To,
+			Value:         trace.Value,
+			Input:         trace.Input,
+			GasPrice:      trace.GasPrice,
+			GasLimit:      trace.GasLimit,
+			CreateAddress: "",
+		}
+		if len(evm.TxRecord.Traces) == 1 {
+			txInfo.External = true
+		} else {
+			txInfo.External = false
+		}
+
+		if _, err := evm.vmConfig.TxColl.InsertOne(context.Background(), *txInfo); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			fmt.Println(txInfo)
+			os.Exit(1)
+		}
+		txInfo = nil // mark for garbage collection
 	}
 
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
@@ -346,10 +445,41 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []by
 // Opcodes that attempt to perform such modifications will result in exceptions
 // instead of performing the modifications.
 func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte, gas uint64, trace *experiment.Trace) (ret []byte, leftOverGas uint64, err error) {
-	if trace != nil {
-		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth is set in function run(), here we preset the correct value
+	if trace != nil { // there are cases where trace is nil
+		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth will be added by one in function run(), here we preset the correct value
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
+		trace.Value = "0"
+		trace.Input = hexutil.Encode(input) // contract code as input
+		trace.GasLimit = gas
+		trace.GasPrice = evm.GasPrice.String()
+
+		// record transaction info (both internal and external)
+		txInfo := &experiment.TxInfo{
+			BlockNum:      evm.TxRecord.BlockNum,
+			TxIndex:       evm.TxRecord.TxIndex,
+			Nonce:         evm.StateDB.GetNonce(caller.Address()),
+			TxHash:        evm.TxRecord.TxHash,
+			From:          trace.From,
+			To:            trace.To,
+			Value:         trace.Value,
+			Input:         trace.Input,
+			GasPrice:      trace.GasPrice,
+			GasLimit:      trace.GasLimit,
+			CreateAddress: "",
+		}
+		if len(evm.TxRecord.Traces) == 1 {
+			txInfo.External = true
+		} else {
+			txInfo.External = false
+		}
+
+		if _, err := evm.vmConfig.TxColl.InsertOne(context.Background(), *txInfo); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			fmt.Println(txInfo)
+			os.Exit(1)
+		}
+		txInfo = nil // mark for garbage collection
 	}
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
 		return nil, gas, nil
@@ -416,6 +546,39 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		trace.CallStackDepth = uint64(evm.depth + 1) // evm.depth will be added by one in function run(), here we preset the correct value
 		trace.From = caller.Address().String()
 		trace.To = "" // empty address for contract creation
+		trace.Value = value.String()
+		trace.Input = hexutil.Encode(codeAndHash.code) // contract code as input
+		trace.GasLimit = gas
+		trace.GasPrice = evm.GasPrice.String()
+
+		// record transaction info (both internal and external)
+		txInfo := &experiment.TxInfo{
+			BlockNum:      evm.TxRecord.BlockNum,
+			TxIndex:       evm.TxRecord.TxIndex,
+			Nonce:         evm.StateDB.GetNonce(caller.Address()),
+			TxHash:        evm.TxRecord.TxHash,
+			From:          trace.From,
+			To:            trace.To,
+			Value:         trace.Value,
+			Input:         trace.Input,
+			GasPrice:      trace.GasPrice,
+			GasLimit:      trace.GasLimit,
+			CreateAddress: address.String(),
+		}
+		if len(evm.TxRecord.Traces) == 1 {
+			txInfo.External = true
+			evm.TxRecord.CreateAddress = address.String() // set created contract address for external creat contract
+		} else {
+			txInfo.External = false
+			evm.TxRecord.CreateAddress = ""
+		}
+
+		if _, err := evm.vmConfig.TxColl.InsertOne(context.Background(), *txInfo); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			fmt.Println(txInfo)
+			os.Exit(1)
+		}
+		txInfo = nil // mark for garbage collection
 	}
 
 	// Depth check execution. Fail if we're trying to execute above the
@@ -490,6 +653,35 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	if evm.vmConfig.Debug && evm.depth == 0 {
 		evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
 	}
+
+	// record new created contract
+	if trace != nil {
+		newContract := &experiment.ContractCode{
+			Address:  address.String(),
+			ByteCode: hexutil.Encode(ret),
+			Nonce:    evm.StateDB.GetNonce(caller.Address()) - 1,
+			From:     caller.Address().String(),
+			Value:    value.String(),
+			GasLimit: gas,
+			GasPrice: evm.GasPrice.String(),
+			Input:    hexutil.Encode(codeAndHash.code),
+			TxHash:   evm.TxRecord.TxHash,
+		}
+		// check if this is an external transaction
+		if len(evm.TxRecord.Traces) == 1 {
+			newContract.External = true
+		} else {
+			newContract.External = false
+		}
+
+		if _, err := evm.vmConfig.CodeColl.InsertOne(context.Background(), *newContract); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			fmt.Println(newContract)
+			os.Exit(1)
+		}
+		newContract = nil // mark nil for garbage collection
+	}
+
 	return ret, address, contract.Gas, err
 
 }

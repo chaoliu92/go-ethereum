@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
 	"github.com/ethereum/go-ethereum/core/state"
@@ -104,17 +105,22 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	vmenv := vm.NewEVM(context, statedb, config, cfg)
 
 	// Set some metadata about the transaction
-	vmenv.TxRecord = experiment.NewTxRecord()
+	vmenv.TxRecord = nil                      // mark for garbage collection
+	vmenv.TxRecord = experiment.NewTxRecord() // create a new record
 	vmenv.TxRecord.BlockNum = context.BlockNumber.Uint64()
 	vmenv.TxRecord.TxIndex = statedb.GetTxIndex() + 1
+	vmenv.TxRecord.Nonce = tx.Nonce()
 	vmenv.TxRecord.TxHash = tx.Hash().String()
+	vmenv.TxRecord.Input = hexutil.Encode(msg.Data())
 	vmenv.TxRecord.From = msg.From().String()
 	if msg.To() == nil {
 		vmenv.TxRecord.To = ""
 	} else {
 		vmenv.TxRecord.To = msg.To().String()
 	}
+	vmenv.TxRecord.Value = tx.Value().String()
 	vmenv.TxRecord.GasLimit = tx.Gas()
+	vmenv.TxRecord.GasPrice = tx.GasPrice().String()
 
 	// Apply the transaction to the current state (included in the env)
 	_, gas, failed, err := ApplyMessage(vmenv, msg, gp)
@@ -145,8 +151,6 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 
 	// Write exceptional records to database
 	if vmenv.TxRecord.HasException {
-		//if _, err := cfg.ExceptionColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
-		//	if len(regexp.MustCompile("^an inserted document is too large$").FindAllString(err.ErrorMsg(), -1)) > 0 { // for large documents, store in the GridFS instead
 		for _, v := range vmenv.TxRecord.Traces {
 			b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
 			if err != nil {

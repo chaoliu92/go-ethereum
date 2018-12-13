@@ -149,8 +149,8 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		}
 		rawdb.WriteDatabaseVersion(chainDb, core.BlockChainVersion)
 	}
-	// Setup mongodb connections (collection and GridFS)
-	coll, bucket, err := experiment.Collections()
+	// Setup mongodb connections (collections and GridFS)
+	collException, collCode, collTx, bucket, err := experiment.Collections()
 	if err != nil {
 		return nil, err
 	}
@@ -159,8 +159,10 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 			EnablePreimageRecording: config.EnablePreimageRecording,
 			EWASMInterpreter:        config.EWASMInterpreter,
 			EVMInterpreter:          config.EVMInterpreter,
-			ExceptionColl:           coll,   // MongoDB collection for exception records
-			ExceptionGridFSBucket:   bucket, // MongoDB GridFS bucket for exception trace steps
+			ExceptionColl:           collException, // MongoDB collection for exception records
+			CodeColl:                collCode,      // MongoDB collection for contract code records
+			TxColl:                  collTx,        // MongoDB collection for transaction records
+			ExceptionGridFSBucket:   bucket,        // MongoDB GridFS bucket for exception trace steps
 		}
 		cacheConfig = &core.CacheConfig{Disabled: config.NoPruning, TrieNodeLimit: config.TrieCache, TrieTimeLimit: config.TrieTimeout}
 	)

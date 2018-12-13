@@ -2,20 +2,19 @@ package experiment
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/mongodb/mongo-go-driver/mongo/gridfs"
 	"github.com/mongodb/mongo-go-driver/options"
-	"os"
 	"regexp"
 )
 
 var (
-	ExceptionFile  = "/Volumes/Data/Ethereum/20181115/exception"
-	DatabaseURL    = "mongodb://localhost:27017"
-	DatabaseName   = "experiment"
-	CollectionName = "exceptions"
-	BucketName     = "exception_bucket"
+	DatabaseURL             = "mongodb://localhost:27017"
+	DatabaseName            = "experiment"
+	ExceptionCollectionName = "exceptions"
+	CodeCollectionName      = "contract_code"
+	TxCollectionName        = "transactions"
+	BucketName              = "exception_bucket"
 )
 
 // Enum values for different exception kinds
@@ -40,51 +39,91 @@ const (
 )
 
 type OneStep struct {
-	StepNum uint64 // Steps step number (i.e. consecutive numbers starting from 1)
-	PC      uint64
-	OpCode  string
+	StepNum      uint64 // Steps step number (i.e. consecutive numbers starting from 1)
+	PC           uint64
+	Ins          string
+	RemainingGas uint64 // remaining gas after execution of this step
 }
 
 type Trace struct {
 	CallStackDepth uint64
 	From           string
 	To             string
+	Value          string
+	Input          string
+	GasLimit       uint64
+	GasPrice       string
 	StatusCode     uint64
 	ErrorMsg       string
 	// TODO Define different kind for each explicit exception
 	ErrorCode  uint64 // 0 for no exception, 1 for explicit exception, 2 and so on for each implicit exception
 	Steps      []*OneStep
-	TraceDocID string // refer to a GridFS file in case TxRecord being too large
+	TraceDocID string // refer to a GridFS file in case ExceptionalTx being too large
 }
 
-type TxRecord struct {
-	BlockNum     uint64
-	TxIndex      uint64
-	TxHash       string
-	From         string
-	To           string
-	GasLimit     uint64
-	StatusCode   uint64 // external transaction status code
-	NumSteps     uint64 // number of execution steps this transaction takes
-	HasException bool   // whether this transaction encounters any form of exception (including internal ones)
-	Traces       []*Trace
+// for exceptional transactions
+type ExceptionalTx struct {
+	BlockNum      uint64
+	TxIndex       uint64
+	Nonce         uint64
+	TxHash        string
+	From          string
+	To            string
+	Value         string
+	Input         string
+	GasLimit      uint64
+	GasPrice      string
+	CreateAddress string // new account address if current transaction is a contract create
+	StatusCode    uint64 // external transaction status code
+	NumSteps      uint64 // number of execution steps this transaction takes
+	HasException  bool   // whether this transaction encounters any form of exception (including internal ones)
+	Traces        []*Trace
 }
 
-func NewTxRecord() *TxRecord {
-	txRecord := new(TxRecord)
+// for all transactions
+type TxInfo struct {
+	BlockNum      uint64
+	TxIndex       uint64
+	Nonce         uint64
+	TxHash        string
+	From          string
+	To            string
+	Value         string
+	Input         string
+	GasPrice      string
+	GasLimit      uint64
+	CreateAddress string // new account address if current transaction is a contract create
+	External      bool   // whether this is an external transaction
+}
+
+type ContractCode struct {
+	Address  string
+	ByteCode string // runtime contract code (after initialization)
+	Nonce    uint64 // nonce used to generate this contract's address
+	From     string // account that create this contract
+	Value    string // initial deposit value
+	GasLimit uint64 // initial gas limit
+	GasPrice string // initial gas price
+	Input    string // initial contract code (including construction)
+	TxHash   string // transaction hash of the external transaction
+	External bool   // whether this account for an external transaction
+}
+
+func NewTxRecord() *ExceptionalTx {
+	txRecord := new(ExceptionalTx)
 	txRecord.Traces = make([]*Trace, 0)
 	return txRecord
 }
 
 // Create a new Steps instance, insert into slices, return a pointer of it
-func (tx *TxRecord) NewTrace() *Trace {
+func (tx *ExceptionalTx) NewTrace() *Trace {
 	trace := new(Trace)
 	trace.Steps = make([]*OneStep, 0)
 	tx.Traces = append(tx.Traces, trace)
 	return trace
 }
 
-func (tx *TxRecord) ReleaseInternal() {
+func (tx *ExceptionalTx) ReleaseInternal() {
 	for i, p := range tx.Traces {
 		p.ReleaseInternal() // mark each trace step pointer as nil (for garbage collection)
 		tx.Traces[i] = nil  // mark each trace pointer as nil (for garbage collection)
@@ -142,32 +181,22 @@ func CheckException(err error) (exception string, kind uint64) {
 	}
 }
 
-func Collections() (coll *mongo.Collection, gridfsbucket *gridfs.Bucket, err error) {
+func Collections() (collException *mongo.Collection, collCode *mongo.Collection, collTx *mongo.Collection, gridfsbucket *gridfs.Bucket, err error) {
 	client, err := mongo.Connect(context.Background(), DatabaseURL)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	db := client.Database(DatabaseName)
-	coll = db.Collection(CollectionName)
+	collException = db.Collection(ExceptionCollectionName)
+	collCode = db.Collection(CodeCollectionName)
+	collTx = db.Collection(TxCollectionName)
 	gridfsbucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &BucketName})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	return coll, gridfsbucket, nil
+	return collException, collCode, collTx, gridfsbucket, nil
 }
 
 func CloseConnection(coll *mongo.Collection) (err error) {
 	return coll.Database().Client().Disconnect(context.Background())
-}
-
-func File() (*os.File, error) {
-	file, err := os.OpenFile(ExceptionFile, os.O_CREATE|os.O_EXCL, 0644)
-	if err != nil {
-		return nil, err
-	}
-	return file, err
-}
-
-func Encoder(file *os.File) (encoder *json.Encoder) {
-	return json.NewEncoder(file)
 }

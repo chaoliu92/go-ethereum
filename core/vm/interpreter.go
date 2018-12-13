@@ -58,6 +58,8 @@ type Config struct {
 
 	// Database collection (for MongoDB) to write exception records
 	ExceptionColl         *mongo.Collection
+	CodeColl              *mongo.Collection
+	TxColl                *mongo.Collection
 	ExceptionGridFSBucket *gridfs.Bucket
 }
 
@@ -234,7 +236,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 			oneStep := new(experiment.OneStep)
 			oneStep.StepNum = in.evm.TxRecord.NumSteps
 			oneStep.PC = pc
-			oneStep.OpCode = opCodeToString[op]
+			oneStep.Ins = op.String()
 			trace.Steps = append(trace.Steps, oneStep)
 		}
 
@@ -280,6 +282,15 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 
 		// execute the operation
 		res, err := operation.execute(&pc, in, contract, mem, stack)
+		// for PUSHx instructions, we need to catch its oprand
+		if trace != nil {
+			oneStep := trace.Steps[len(trace.Steps)-1]
+			oneStep.RemainingGas = contract.Gas // record remaining gas after execution
+			if op.IsPush() {
+				oneStep.Ins = op.String() + stack.peek().Text(16)
+			}
+		}
+
 		// verifyPool is a build flag. Pool verification makes sure the integrity
 		// of the integer pool by comparing values to a default value.
 		if verifyPool {
