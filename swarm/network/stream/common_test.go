@@ -18,7 +18,6 @@ package stream
 
 import (
 	"context"
-	crand "crypto/rand"
 	"errors"
 	"flag"
 	"fmt"
@@ -39,8 +38,8 @@ import (
 	"github.com/ethereum/go-ethereum/swarm/pot"
 	"github.com/ethereum/go-ethereum/swarm/state"
 	"github.com/ethereum/go-ethereum/swarm/storage"
-	mockdb "github.com/ethereum/go-ethereum/swarm/storage/mock/db"
-	colorable "github.com/mattn/go-colorable"
+	"github.com/ethereum/go-ethereum/swarm/testutil"
+	"github.com/mattn/go-colorable"
 )
 
 var (
@@ -67,21 +66,6 @@ func init() {
 
 	log.PrintOrigins(true)
 	log.Root().SetHandler(log.LvlFilterHandler(log.Lvl(*loglevel), log.StreamHandler(colorable.NewColorableStderr(), log.TerminalFormat(true))))
-}
-
-func createGlobalStore() (string, *mockdb.GlobalStore, error) {
-	var globalStore *mockdb.GlobalStore
-	globalStoreDir, err := ioutil.TempDir("", "global.store")
-	if err != nil {
-		log.Error("ErrorMsg initiating global store temp directory!", "err", err)
-		return "", nil, err
-	}
-	globalStore, err = mockdb.NewGlobalStore(globalStoreDir)
-	if err != nil {
-		log.Error("ErrorMsg initiating global store!", "err", err)
-		return "", nil, err
-	}
-	return globalStoreDir, globalStore, nil
 }
 
 func newStreamerTester(t *testing.T, registryOptions *RegistryOptions) (*p2ptest.ProtocolTester, *Registry, *storage.LocalStore, func(), error) {
@@ -114,7 +98,7 @@ func newStreamerTester(t *testing.T, registryOptions *RegistryOptions) (*p2ptest
 
 	delivery := NewDelivery(to, netStore)
 	netStore.NewNetFetcherFunc = network.NewFetcherFactory(delivery.RequestFromPeers, true).New
-	streamer := NewRegistry(addr.ID(), delivery, netStore, state.NewInmemoryStore(), registryOptions)
+	streamer := NewRegistry(addr.ID(), delivery, netStore, state.NewInmemoryStore(), registryOptions, nil)
 	teardown := func() {
 		streamer.Close()
 		removeDataDir()
@@ -230,12 +214,7 @@ func generateRandomFile() (string, error) {
 	//generate a random file size between minFileSize and maxFileSize
 	fileSize := rand.Intn(maxFileSize-minFileSize) + minFileSize
 	log.Debug(fmt.Sprintf("Generated file with filesize %d kB", fileSize))
-	b := make([]byte, fileSize*1024)
-	_, err := crand.Read(b)
-	if err != nil {
-		log.Error("ErrorMsg generating random file.", "err", err)
-		return "", err
-	}
+	b := testutil.RandomBytes(1, fileSize*1024)
 	return string(b), nil
 }
 
