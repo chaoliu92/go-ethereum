@@ -11,10 +11,9 @@ import (
 var (
 	DatabaseURL             = "mongodb://localhost:27017"
 	DatabaseName            = "experiment"
-	ExceptionCollectionName = "exceptions"
+	ExceptionCollectionName = "transactions"
 	CodeCollectionName      = "contract_code"
-	TxCollectionName        = "transactions"
-	BucketName              = "exception_bucket"
+	BucketName              = "transaction_bucket"
 )
 
 // Enum values for different exception kinds
@@ -39,61 +38,46 @@ const (
 )
 
 type OneStep struct {
-	StepNum      uint64 // Steps step number (i.e. consecutive numbers starting from 1)
-	PC           uint64
-	Ins          string
-	RemainingGas uint64 // remaining gas after execution of this step
+	StepNum     uint32 // Steps step number (i.e. consecutive numbers starting from 1)
+	PC          uint32
+	Instruction string
+	GasLeft     uint32 // remaining gas after execution of this step
 }
 
 type Trace struct {
-	CallStackDepth uint64
+	CallStackDepth uint16
+	Type           string // one in "create", "call", "callcode", "delegatecall", "staticcall"
 	From           string
 	To             string
 	Value          string
 	Input          string
-	GasLimit       uint64
-	GasPrice       string
-	StatusCode     uint64
+	GasLimit       uint32
+	GasLeft        uint32 // remaining gas after execution of this step
+	StatusCode     uint8
+	NewAddress     string // new account address if current transaction is a contract create
 	ErrorMsg       string
-	// TODO Define different kind for each explicit exception
-	ErrorCode  uint64 // 0 for no exception, 1 for explicit exception, 2 and so on for each implicit exception
-	Steps      []*OneStep
-	TraceDocID string // refer to a GridFS file in case ExceptionalTx being too large
+	ErrorCode      uint8 // 0 for no exception, 1 for explicit exception, 2 and so on for each implicit exception
+	Steps          []*OneStep
+	TraceDocID     string // refer to a GridFS file in case ExceptionalTx being too large
 }
 
 // for exceptional transactions
-type ExceptionalTx struct {
-	BlockNum      uint64
-	TxIndex       uint64
-	Nonce         uint64
-	TxHash        string
-	From          string
-	To            string
-	Value         string
-	Input         string
-	GasLimit      uint64
-	GasPrice      string
-	CreateAddress string // new account address if current transaction is a contract create
-	StatusCode    uint64 // external transaction status code
-	NumSteps      uint64 // number of execution steps this transaction takes
-	HasException  bool   // whether this transaction encounters any form of exception (including internal ones)
-	Traces        []*Trace
-}
-
-// for all transactions
-type TxInfo struct {
-	BlockNum      uint64
-	TxIndex       uint64
-	Nonce         uint64
-	TxHash        string
-	From          string
-	To            string
-	Value         string
-	Input         string
-	GasPrice      string
-	GasLimit      uint64
-	CreateAddress string // new account address if current transaction is a contract create
-	External      bool   // whether this is an external transaction
+type Transaction struct {
+	BlockNum     uint32
+	TxIndex      uint16
+	Nonce        uint64
+	TxHash       string
+	From         string
+	To           string
+	Value        string
+	Input        string
+	GasLimit     uint32
+	GasPrice     string
+	GasUsed      uint32 // gas used during execution of this transaction
+	StatusCode   uint8  // external transaction status code
+	NumSteps     uint32 // number of execution steps this transaction takes
+	HasException bool   // whether this transaction encounters any form of exception (including internal ones)
+	Traces       []*Trace
 }
 
 type ContractCode struct {
@@ -102,28 +86,26 @@ type ContractCode struct {
 	Nonce    uint64 // nonce used to generate this contract's address
 	From     string // account that create this contract
 	Value    string // initial deposit value
-	GasLimit uint64 // initial gas limit
-	GasPrice string // initial gas price
 	Input    string // initial contract code (including construction)
 	TxHash   string // transaction hash of the external transaction
 	External bool   // whether this account for an external transaction
 }
 
-func NewTxRecord() *ExceptionalTx {
-	txRecord := new(ExceptionalTx)
+func NewTxRecord() *Transaction {
+	txRecord := new(Transaction)
 	txRecord.Traces = make([]*Trace, 0)
 	return txRecord
 }
 
 // Create a new Steps instance, insert into slices, return a pointer of it
-func (tx *ExceptionalTx) NewTrace() *Trace {
+func (tx *Transaction) NewTrace() *Trace {
 	trace := new(Trace)
 	trace.Steps = make([]*OneStep, 0)
 	tx.Traces = append(tx.Traces, trace)
 	return trace
 }
 
-func (tx *ExceptionalTx) ReleaseInternal() {
+func (tx *Transaction) ReleaseInternal() {
 	for i, p := range tx.Traces {
 		p.ReleaseInternal() // mark each trace step pointer as nil (for garbage collection)
 		tx.Traces[i] = nil  // mark each trace pointer as nil (for garbage collection)
@@ -136,7 +118,7 @@ func (t *Trace) ReleaseInternal() {
 	}
 }
 
-func CheckException(err error) (exception string, kind uint64) {
+func CheckException(err error) (exception string, kind uint8) {
 	if err == nil {
 		return "", NoException // no exception
 	}
@@ -181,20 +163,19 @@ func CheckException(err error) (exception string, kind uint64) {
 	}
 }
 
-func Collections() (collException *mongo.Collection, collCode *mongo.Collection, collTx *mongo.Collection, gridfsbucket *gridfs.Bucket, err error) {
+func Collections() (collTx *mongo.Collection, collCode *mongo.Collection, gridfsbucket *gridfs.Bucket, err error) {
 	client, err := mongo.Connect(context.Background(), DatabaseURL)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
 	db := client.Database(DatabaseName)
-	collException = db.Collection(ExceptionCollectionName)
+	collTx = db.Collection(ExceptionCollectionName)
 	collCode = db.Collection(CodeCollectionName)
-	collTx = db.Collection(TxCollectionName)
 	gridfsbucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &BucketName})
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, nil, err
 	}
-	return collException, collCode, collTx, gridfsbucket, nil
+	return collTx, collCode, gridfsbucket, nil
 }
 
 func CloseConnection(coll *mongo.Collection) (err error) {

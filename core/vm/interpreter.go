@@ -17,13 +17,11 @@
 package vm
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/experiment"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/mongodb/mongo-go-driver/mongo/gridfs"
 	"hash"
-	"os"
 	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -52,15 +50,10 @@ type Config struct {
 	// Type of the EVM interpreter
 	EVMInterpreter string
 
-	// ErrorMsg record file descriptor and JSON encoder (for writing exception records)
-	ExceptionFile    *os.File
-	ExceptionEncoder *json.Encoder
-
 	// Database collection (for MongoDB) to write exception records
-	ExceptionColl         *mongo.Collection
-	CodeColl              *mongo.Collection
-	TxColl                *mongo.Collection
-	ExceptionGridFSBucket *gridfs.Bucket
+	TxColl         *mongo.Collection
+	CodeColl       *mongo.Collection
+	TxGridFSBucket *gridfs.Bucket
 }
 
 // Interpreter is used to run Ethereum based contracts and will utilise the
@@ -235,8 +228,8 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 			in.evm.TxRecord.NumSteps += 1 // A new execution step for this transaction
 			oneStep := new(experiment.OneStep)
 			oneStep.StepNum = in.evm.TxRecord.NumSteps
-			oneStep.PC = pc
-			oneStep.Ins = op.String()
+			oneStep.PC = uint32(pc)
+			oneStep.Instruction = op.String()
 			trace.Steps = append(trace.Steps, oneStep)
 		}
 
@@ -285,9 +278,9 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 		// for PUSHx instructions, we need to catch its oprand
 		if trace != nil {
 			oneStep := trace.Steps[len(trace.Steps)-1]
-			oneStep.RemainingGas = contract.Gas // record remaining gas after execution
+			oneStep.GasLeft = uint32(contract.Gas) // record remaining gas after execution
 			if op.IsPush() {
-				oneStep.Ins = op.String() + stack.peek().Text(16)
+				oneStep.Instruction = op.String() + stack.peek().Text(16)
 			}
 		}
 

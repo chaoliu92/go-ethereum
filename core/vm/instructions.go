@@ -702,7 +702,7 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	}
 
 	contract.UseGas(gas)
-	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
 	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value, trace)
 	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
 	if trace.ErrorCode != 0 {
@@ -747,7 +747,7 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	// Apply EIP150
 	gas -= gas / 64
 	contract.UseGas(gas)
-	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
 	res, addr, returnGas, suberr := interpreter.evm.Create2(contract, input, gas, endowment, salt, trace)
 	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
 	if trace.ErrorCode != 0 {
@@ -830,7 +830,7 @@ func opCallCode(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 	if value.Sign() != 0 {
 		gas += params.CallStipend
 	}
-	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
 	ret, returnGas, err := interpreter.evm.CallCode(contract, toAddr, args, gas, value, trace)
 	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
 	if trace.ErrorCode != 0 {
@@ -867,7 +867,7 @@ func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract,
 	// Get arguments from the memory.
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
-	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
 	ret, returnGas, err := interpreter.evm.DelegateCall(contract, toAddr, args, gas, trace)
 	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
 	if trace.ErrorCode != 0 {
@@ -904,7 +904,7 @@ func opStaticCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, m
 	// Get arguments from the memory.
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
-	var trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
 	ret, returnGas, err := interpreter.evm.StaticCall(contract, toAddr, args, gas, trace)
 	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
 	if trace.ErrorCode != 0 {

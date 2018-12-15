@@ -105,13 +105,11 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	vmenv := vm.NewEVM(context, statedb, config, cfg)
 
 	// Set some metadata about the transaction
-	vmenv.TxRecord = nil                      // mark for garbage collection
 	vmenv.TxRecord = experiment.NewTxRecord() // create a new record
-	vmenv.TxRecord.BlockNum = context.BlockNumber.Uint64()
-	vmenv.TxRecord.TxIndex = statedb.GetTxIndex() + 1
+	vmenv.TxRecord.BlockNum = uint32(context.BlockNumber.Uint64())
+	vmenv.TxRecord.TxIndex = uint16(statedb.GetTxIndex() + 1)
 	vmenv.TxRecord.Nonce = tx.Nonce()
 	vmenv.TxRecord.TxHash = tx.Hash().String()
-	vmenv.TxRecord.Input = hexutil.Encode(msg.Data())
 	vmenv.TxRecord.From = msg.From().String()
 	if msg.To() == nil {
 		vmenv.TxRecord.To = ""
@@ -119,7 +117,8 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 		vmenv.TxRecord.To = msg.To().String()
 	}
 	vmenv.TxRecord.Value = tx.Value().String()
-	vmenv.TxRecord.GasLimit = tx.Gas()
+	vmenv.TxRecord.Input = hexutil.Encode(msg.Data())
+	vmenv.TxRecord.GasLimit = uint32(tx.Gas())
 	vmenv.TxRecord.GasPrice = tx.GasPrice().String()
 
 	// Apply the transaction to the current state (included in the env)
@@ -149,33 +148,32 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	receipt.Logs = statedb.GetLogs(tx.Hash())
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
 
-	// Write exceptional records to database
-	if vmenv.TxRecord.HasException {
-		for _, v := range vmenv.TxRecord.Traces {
-			b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
-			if err != nil {
-				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
-				log.Error(string(vmenv.TxRecord.BlockNum))
-				fmt.Println(vmenv.TxRecord)
-				os.Exit(1)
-			}
-			v.Steps = nil // we use a separate document to store this trace step list
-			docID, err := cfg.ExceptionGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
-			if err != nil {
-				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
-				log.Error(string(vmenv.TxRecord.BlockNum))
-				fmt.Println(vmenv.TxRecord)
-				os.Exit(1)
-			}
-			v.TraceDocID = docID.String() // set trace step's document ID
-		}
-
-		if _, err := cfg.ExceptionColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
-			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+	vmenv.TxRecord.GasUsed = uint32(gas)
+	// Write transaction records to database
+	for _, v := range vmenv.TxRecord.Traces {
+		b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
+		if err != nil {
+			log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
 			log.Error(string(vmenv.TxRecord.BlockNum))
 			fmt.Println(vmenv.TxRecord)
 			os.Exit(1)
 		}
+		v.Steps = nil // we use a separate document to store this trace step list
+		docID, err := cfg.TxGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
+		if err != nil {
+			log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
+			log.Error(string(vmenv.TxRecord.BlockNum))
+			fmt.Println(vmenv.TxRecord)
+			os.Exit(1)
+		}
+		v.TraceDocID = docID.String() // set trace step's document ID
+	}
+
+	if _, err := cfg.TxColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
+		log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+		log.Error(string(vmenv.TxRecord.BlockNum))
+		fmt.Println(vmenv.TxRecord)
+		os.Exit(1)
 	}
 
 	// For garbage collection

@@ -1531,11 +1531,8 @@ func (bc *BlockChain) update() {
 		case <-futureTimer.C:
 			bc.procFutureBlocks()
 		case <-bc.quit:
-			if bc.vmConfig.ExceptionColl != nil || bc.vmConfig.ExceptionGridFSBucket != nil {
-				experiment.CloseConnection(bc.vmConfig.ExceptionColl) // Close database connection
-			}
-			if bc.vmConfig.ExceptionFile != nil {
-				bc.vmConfig.ExceptionFile.Close() // Close file
+			if bc.vmConfig.TxColl != nil || bc.vmConfig.CodeColl != nil || bc.vmConfig.TxGridFSBucket != nil {
+				experiment.CloseConnection(bc.vmConfig.TxColl) // Close database connection
 			}
 			return
 		}
