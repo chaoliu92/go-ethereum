@@ -236,6 +236,9 @@ func CreateConsensusEngine(ctx *node.ServiceContext, chainConfig *params.ChainCo
 	}
 	// Otherwise assume proof-of-work
 	switch config.PowMode {
+	case ethash.ModeFullFake: // add for full FakePoW in regular sync
+		log.Warn("Ethash used in full fake mode")
+		return ethash.NewFullFaker()
 	case ethash.ModeFake:
 		log.Warn("Ethash used in fake mode")
 		return ethash.NewFaker()
