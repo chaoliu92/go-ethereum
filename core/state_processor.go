@@ -149,31 +149,34 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	receipt.Bloom = types.CreateBloom(types.Receipts{receipt})
 
 	vmenv.TxRecord.GasUsed = uint32(gas)
-	// Write transaction records to database
-	for _, v := range vmenv.TxRecord.Traces {
-		b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
-		if err != nil {
-			log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
-			log.Error(string(vmenv.TxRecord.BlockNum))
-			fmt.Println(vmenv.TxRecord)
-			os.Exit(1)
-		}
-		v.Steps = nil // we use a separate document to store this trace step list
-		docID, err := cfg.TxGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
-		if err != nil {
-			log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
-			log.Error(string(vmenv.TxRecord.BlockNum))
-			fmt.Println(vmenv.TxRecord)
-			os.Exit(1)
-		}
-		v.TraceDocID = docID.String() // set trace step's document ID
-	}
 
-	if _, err := cfg.TxColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
-		log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
-		log.Error(string(vmenv.TxRecord.BlockNum))
-		fmt.Println(vmenv.TxRecord)
-		os.Exit(1)
+	// Write transaction records to database
+	if vmenv.TxRecord.HasException {
+		for _, v := range vmenv.TxRecord.Traces {
+			b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
+			if err != nil {
+				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
+				log.Error(string(vmenv.TxRecord.BlockNum))
+				fmt.Println(vmenv.TxRecord)
+				os.Exit(1)
+			}
+			v.Steps = nil // we use a separate document to store this trace step list
+			docID, err := cfg.TxGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
+			if err != nil {
+				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
+				log.Error(string(vmenv.TxRecord.BlockNum))
+				fmt.Println(vmenv.TxRecord)
+				os.Exit(1)
+			}
+			v.TraceDocID = docID.String() // set trace step's document ID
+		}
+
+		if _, err := cfg.TxColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			log.Error(string(vmenv.TxRecord.BlockNum))
+			fmt.Println(vmenv.TxRecord)
+			os.Exit(1)
+		}
 	}
 
 	// For garbage collection
