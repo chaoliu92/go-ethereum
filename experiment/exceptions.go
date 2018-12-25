@@ -38,10 +38,11 @@ const (
 )
 
 type OneStep struct {
-	StepNum     uint32 // Steps step number (i.e. consecutive numbers starting from 1)
-	PC          uint32
-	Instruction string
-	GasLeft     uint32 // remaining gas after execution of this step
+	StepNum uint32 // Steps step number (i.e. consecutive numbers starting from 1)
+	PC      uint32
+	OpCode  string
+	OpValue string // for PUSHx only
+	GasLeft uint32 // remaining gas after execution of this step
 }
 
 type Trace struct {

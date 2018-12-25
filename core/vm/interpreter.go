@@ -229,7 +229,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 			oneStep := new(experiment.OneStep)
 			oneStep.StepNum = in.evm.TxRecord.NumSteps
 			oneStep.PC = uint32(pc)
-			oneStep.Instruction = op.String()
+			oneStep.OpCode = op.String()
 			trace.Steps = append(trace.Steps, oneStep)
 		}
 
@@ -280,7 +280,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 			oneStep := trace.Steps[len(trace.Steps)-1]
 			oneStep.GasLeft = uint32(contract.Gas) // record remaining gas after execution
 			if op.IsPush() {
-				oneStep.Instruction = op.String() + stack.peek().Text(16)
+				oneStep.OpValue = "0x" + stack.peek().Text(16)
 			}
 		}
 
