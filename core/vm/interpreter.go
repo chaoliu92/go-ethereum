@@ -51,9 +51,10 @@ type Config struct {
 	EVMInterpreter string
 
 	// Database collection (for MongoDB) to write exception records
-	TxColl         *mongo.Collection
-	CodeColl       *mongo.Collection
-	TxGridFSBucket *gridfs.Bucket
+	TxColl            *mongo.Collection
+	CodeColl          *mongo.Collection
+	TxGridFSBucket    *gridfs.Bucket
+	InputGridFSBucket *gridfs.Bucket
 }
 
 // Interpreter is used to run Ethereum based contracts and will utilise the

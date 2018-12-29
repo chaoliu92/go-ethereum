@@ -153,21 +153,37 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	// Write transaction records to database
 	if vmenv.TxRecord.HasException {
 		for _, v := range vmenv.TxRecord.Traces {
-			b, err := json.Marshal(v.Steps) // marshal trace step's list to []byte
+			b, err := json.Marshal(v.Input)
 			if err != nil {
 				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
 				log.Error(string(vmenv.TxRecord.BlockNum))
 				fmt.Println(vmenv.TxRecord)
 				os.Exit(1)
 			}
-			v.Steps = nil // we use a separate document to store this trace step list
-			docID, err := cfg.TxGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
+			docID, err := cfg.InputGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
 			if err != nil {
 				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
 				log.Error(string(vmenv.TxRecord.BlockNum))
 				fmt.Println(vmenv.TxRecord)
 				os.Exit(1)
 			}
+			v.Input = docID.String() // we store input file ID instead of raw value (because of MongoDB doc size limit)
+
+			b, err = json.Marshal(v.Steps) // marshal trace step's list to []byte
+			if err != nil {
+				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
+				log.Error(string(vmenv.TxRecord.BlockNum))
+				fmt.Println(vmenv.TxRecord)
+				os.Exit(1)
+			}
+			docID, err = cfg.TxGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
+			if err != nil {
+				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
+				log.Error(string(vmenv.TxRecord.BlockNum))
+				fmt.Println(vmenv.TxRecord)
+				os.Exit(1)
+			}
+			v.Steps = nil // we use a separate document to store this trace step list
 			v.TraceDocID = docID.String() // set trace step's document ID
 		}
 

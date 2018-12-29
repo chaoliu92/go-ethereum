@@ -13,7 +13,8 @@ var (
 	DatabaseName            = "experiment"
 	ExceptionCollectionName = "transactions"
 	CodeCollectionName      = "contract_code"
-	BucketName              = "transaction_bucket"
+	TransactionBucketName   = "transaction_bucket"
+	InputBucketName         = "input_bucket" // for transaction inputs (which may take more than 1MB of space)
 )
 
 // Enum values for different exception kinds
@@ -164,19 +165,23 @@ func CheckException(err error) (exception string, kind uint8) {
 	}
 }
 
-func Collections() (collTx *mongo.Collection, collCode *mongo.Collection, gridfsbucket *gridfs.Bucket, err error) {
+func Collections() (collTx *mongo.Collection, collCode *mongo.Collection, txBucket *gridfs.Bucket, inputBucket *gridfs.Bucket, err error) {
 	client, err := mongo.Connect(context.Background(), DatabaseURL)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	db := client.Database(DatabaseName)
 	collTx = db.Collection(ExceptionCollectionName)
 	collCode = db.Collection(CodeCollectionName)
-	gridfsbucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &BucketName})
+	txBucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &TransactionBucketName})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	return collTx, collCode, gridfsbucket, nil
+	inputBucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &InputBucketName})
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	return collTx, collCode, txBucket, inputBucket, nil
 }
 
 func CloseConnection(coll *mongo.Collection) (err error) {
