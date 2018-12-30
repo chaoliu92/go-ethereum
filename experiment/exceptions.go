@@ -3,18 +3,13 @@ package experiment
 import (
 	"context"
 	"github.com/mongodb/mongo-go-driver/mongo"
-	"github.com/mongodb/mongo-go-driver/mongo/gridfs"
-	"github.com/mongodb/mongo-go-driver/options"
 	"regexp"
 )
 
 var (
-	DatabaseURL             = "mongodb://localhost:27017"
-	DatabaseName            = "experiment"
-	ExceptionCollectionName = "transactions"
-	CodeCollectionName      = "contract_code"
-	TransactionBucketName   = "transaction_bucket"
-	InputBucketName         = "input_bucket" // for transaction inputs (which may take more than 1MB of space)
+	DatabaseURL      = "mongodb://localhost:27017"
+	DatabaseName     = "experiment_reduced_size"
+	TxCollectionName = "transactions"
 )
 
 // Enum values for different exception kinds
@@ -38,29 +33,18 @@ const (
 	EmptyCode
 )
 
-type OneStep struct {
-	StepNum uint32 // Steps step number (i.e. consecutive numbers starting from 1)
-	PC      uint32
-	OpCode  string
-	OpValue string // for PUSHx only
-	GasLeft uint32 // remaining gas after execution of this step
-}
-
 type Trace struct {
 	CallStackDepth uint16
 	Type           string // one in "create", "call", "callcode", "delegatecall", "staticcall"
 	From           string
 	To             string
 	Value          string
-	Input          string
 	GasLimit       uint32
 	GasLeft        uint32 // remaining gas after execution of this step
 	StatusCode     uint8
 	NewAddress     string // new account address if current transaction is a contract create
 	ErrorMsg       string
 	ErrorCode      uint8 // 0 for no exception, 1 for explicit exception, 2 and so on for each implicit exception
-	Steps          []*OneStep
-	TraceDocID     string // refer to a GridFS file in case ExceptionalTx being too large
 }
 
 // for exceptional transactions
@@ -72,7 +56,6 @@ type Transaction struct {
 	From         string
 	To           string
 	Value        string
-	Input        string
 	GasLimit     uint32
 	GasPrice     string
 	GasUsed      uint32 // gas used during execution of this transaction
@@ -80,17 +63,6 @@ type Transaction struct {
 	NumSteps     uint32 // number of execution steps this transaction takes
 	HasException bool   // whether this transaction encounters any form of exception (including internal ones)
 	Traces       []*Trace
-}
-
-type ContractCode struct {
-	Address  string
-	ByteCode string // runtime contract code (after initialization)
-	Nonce    uint64 // nonce used to generate this contract's address
-	From     string // account that create this contract
-	Value    string // initial deposit value
-	Input    string // initial contract code (including construction)
-	TxHash   string // transaction hash of the external transaction
-	External bool   // whether this account for an external transaction
 }
 
 func NewTxRecord() *Transaction {
@@ -102,21 +74,13 @@ func NewTxRecord() *Transaction {
 // Create a new Steps instance, insert into slices, return a pointer of it
 func (tx *Transaction) NewTrace() *Trace {
 	trace := new(Trace)
-	trace.Steps = make([]*OneStep, 0)
 	tx.Traces = append(tx.Traces, trace)
 	return trace
 }
 
 func (tx *Transaction) ReleaseInternal() {
-	for i, p := range tx.Traces {
-		p.ReleaseInternal() // mark each trace step pointer as nil (for garbage collection)
-		tx.Traces[i] = nil  // mark each trace pointer as nil (for garbage collection)
-	}
-}
-
-func (t *Trace) ReleaseInternal() {
-	for i := range t.Steps {
-		t.Steps[i] = nil // mark trace step pointer as nil (for garbage collection)
+	for i := range tx.Traces {
+		tx.Traces[i] = nil // mark each trace pointer as nil (for garbage collection)
 	}
 }
 
@@ -165,23 +129,20 @@ func CheckException(err error) (exception string, kind uint8) {
 	}
 }
 
-func Collections() (collTx *mongo.Collection, collCode *mongo.Collection, txBucket *gridfs.Bucket, inputBucket *gridfs.Bucket, err error) {
+func Collections() (collTx *mongo.Collection, err error) {
 	client, err := mongo.Connect(context.Background(), DatabaseURL)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, err
 	}
 	db := client.Database(DatabaseName)
-	collTx = db.Collection(ExceptionCollectionName)
-	collCode = db.Collection(CodeCollectionName)
-	txBucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &TransactionBucketName})
+	collTx = db.Collection(TxCollectionName)
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, err
 	}
-	inputBucket, err = gridfs.NewBucket(db, &options.BucketOptions{Name: &InputBucketName})
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, err
 	}
-	return collTx, collCode, txBucket, inputBucket, nil
+	return collTx, nil
 }
 
 func CloseConnection(coll *mongo.Collection) (err error) {

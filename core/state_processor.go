@@ -17,12 +17,9 @@
 package core
 
 import (
-	"bytes"
 	context2 "context"
-	"encoding/json"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
 	"github.com/ethereum/go-ethereum/core/state"
@@ -117,7 +114,6 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 		vmenv.TxRecord.To = msg.To().String()
 	}
 	vmenv.TxRecord.Value = tx.Value().String()
-	vmenv.TxRecord.Input = hexutil.Encode(msg.Data())
 	vmenv.TxRecord.GasLimit = uint32(tx.Gas())
 	vmenv.TxRecord.GasPrice = tx.GasPrice().String()
 
@@ -152,41 +148,6 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 
 	// Write transaction records to database
 	if vmenv.TxRecord.HasException {
-		for _, v := range vmenv.TxRecord.Traces {
-			b, err := json.Marshal(v.Input)
-			if err != nil {
-				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
-				log.Error(string(vmenv.TxRecord.BlockNum))
-				fmt.Println(vmenv.TxRecord)
-				os.Exit(1)
-			}
-			docID, err := cfg.InputGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
-			if err != nil {
-				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
-				log.Error(string(vmenv.TxRecord.BlockNum))
-				fmt.Println(vmenv.TxRecord)
-				os.Exit(1)
-			}
-			v.Input = docID.String() // we store input file ID instead of raw value (because of MongoDB doc size limit)
-
-			b, err = json.Marshal(v.Steps) // marshal trace step's list to []byte
-			if err != nil {
-				log.Error(fmt.Sprintf("JSON marshal error, %s", err.Error()))
-				log.Error(string(vmenv.TxRecord.BlockNum))
-				fmt.Println(vmenv.TxRecord)
-				os.Exit(1)
-			}
-			docID, err = cfg.TxGridFSBucket.UploadFromStream(vmenv.TxRecord.TxHash, bytes.NewReader(b))
-			if err != nil {
-				log.Error(fmt.Sprintf("GridFS error, %s", err.Error()))
-				log.Error(string(vmenv.TxRecord.BlockNum))
-				fmt.Println(vmenv.TxRecord)
-				os.Exit(1)
-			}
-			v.Steps = nil // we use a separate document to store this trace step list
-			v.TraceDocID = docID.String() // set trace step's document ID
-		}
-
 		if _, err := cfg.TxColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
 			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
 			log.Error(string(vmenv.TxRecord.BlockNum))

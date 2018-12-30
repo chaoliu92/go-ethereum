@@ -150,7 +150,7 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		rawdb.WriteDatabaseVersion(chainDb, core.BlockChainVersion)
 	}
 	// Setup mongodb connections (collections and GridFS)
-	collTx, collCode, txBucket, inputBucket, err := experiment.Collections()
+	collTx, err := experiment.Collections()
 	if err != nil {
 		return nil, err
 	}
@@ -160,9 +160,6 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 			EWASMInterpreter:        config.EWASMInterpreter,
 			EVMInterpreter:          config.EVMInterpreter,
 			TxColl:                  collTx,      // MongoDB collection for transaction records
-			CodeColl:                collCode,    // MongoDB collection for contract code records
-			TxGridFSBucket:          txBucket,    // MongoDB GridFS txBucket for exception trace steps
-			InputGridFSBucket:       inputBucket, // MongoDB GridFS inputBucket for transaction input data
 		}
 		cacheConfig = &core.CacheConfig{Disabled: config.NoPruning, TrieCleanLimit: config.TrieCleanCache, TrieDirtyLimit: config.TrieDirtyCache, TrieTimeLimit: config.TrieTimeout}
 	)

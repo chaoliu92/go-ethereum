@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/experiment"
 	"github.com/mongodb/mongo-go-driver/mongo"
-	"github.com/mongodb/mongo-go-driver/mongo/gridfs"
 	"hash"
 	"sync/atomic"
 
@@ -51,10 +50,7 @@ type Config struct {
 	EVMInterpreter string
 
 	// Database collection (for MongoDB) to write exception records
-	TxColl            *mongo.Collection
-	CodeColl          *mongo.Collection
-	TxGridFSBucket    *gridfs.Bucket
-	InputGridFSBucket *gridfs.Bucket
+	TxColl *mongo.Collection
 }
 
 // Interpreter is used to run Ethereum based contracts and will utilise the
@@ -227,11 +223,6 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 		if trace != nil {
 			// Record trace step for exception experiment use
 			in.evm.TxRecord.NumSteps += 1 // A new execution step for this transaction
-			oneStep := new(experiment.OneStep)
-			oneStep.StepNum = in.evm.TxRecord.NumSteps
-			oneStep.PC = uint32(pc)
-			oneStep.OpCode = op.String()
-			trace.Steps = append(trace.Steps, oneStep)
 		}
 
 		if !operation.valid {
@@ -276,14 +267,6 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 
 		// execute the operation
 		res, err := operation.execute(&pc, in, contract, mem, stack)
-		// for PUSHx instructions, we need to catch its oprand
-		if trace != nil {
-			oneStep := trace.Steps[len(trace.Steps)-1]
-			oneStep.GasLeft = uint32(contract.Gas) // record remaining gas after execution
-			if op.IsPush() {
-				oneStep.OpValue = "0x" + stack.peek().Text(16)
-			}
-		}
 
 		// verifyPool is a build flag. Pool verification makes sure the integrity
 		// of the integer pool by comparing values to a default value.

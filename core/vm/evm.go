@@ -17,13 +17,8 @@
 package vm
 
 import (
-	"context"
-	"fmt"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/experiment"
-	"github.com/ethereum/go-ethereum/log"
 	"math/big"
-	"os"
 	"sync/atomic"
 	"time"
 
@@ -195,7 +190,6 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
 		trace.Value = value.String()
-		trace.Input = hexutil.Encode(input) // contract code as input
 		trace.GasLimit = uint32(gas)
 	}
 
@@ -279,7 +273,6 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
 		trace.Value = value.String()
-		trace.Input = hexutil.Encode(input) // contract code as input
 		trace.GasLimit = uint32(gas)
 	}
 
@@ -331,7 +324,6 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []by
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
 		trace.Value = "0"
-		trace.Input = hexutil.Encode(input) // contract code as input
 		trace.GasLimit = uint32(gas)
 	}
 
@@ -375,7 +367,6 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 		trace.From = caller.Address().String()
 		trace.To = addr.String()
 		trace.Value = "0"
-		trace.Input = hexutil.Encode(input) // contract code as input
 		trace.GasLimit = uint32(gas)
 	}
 	if evm.vmConfig.NoRecursion && evm.depth > 0 {
@@ -437,7 +428,6 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		trace.From = caller.Address().String()
 		trace.To = "" // empty address for contract creation
 		trace.Value = value.String()
-		trace.Input = hexutil.Encode(codeAndHash.code) // contract code as input
 		trace.GasLimit = uint32(gas)
 		trace.NewAddress = address.String()
 	}
@@ -513,32 +503,6 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 	}
 	if evm.vmConfig.Debug && evm.depth == 0 {
 		evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
-	}
-
-	// record new created contract
-	if trace != nil {
-		newContract := &experiment.ContractCode{
-			Address:  address.String(),
-			ByteCode: hexutil.Encode(ret),
-			Nonce:    evm.StateDB.GetNonce(caller.Address()) - 1,
-			From:     caller.Address().String(),
-			Value:    value.String(),
-			Input:    hexutil.Encode(codeAndHash.code),
-			TxHash:   evm.TxRecord.TxHash,
-		}
-		// check if this is an external transaction
-		if len(evm.TxRecord.Traces) == 1 {
-			newContract.External = true
-		} else {
-			newContract.External = false
-		}
-
-		if _, err := evm.vmConfig.CodeColl.InsertOne(context.Background(), *newContract); err != nil {
-			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
-			fmt.Println(newContract)
-			os.Exit(1)
-		}
-		newContract = nil // mark nil for garbage collection
 	}
 
 	trace.GasLeft = uint32(contract.Gas)
