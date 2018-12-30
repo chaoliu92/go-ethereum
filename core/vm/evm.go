@@ -65,7 +65,7 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool, trace *exper
 			}
 			//return interpreter.Run(contract, input, readOnly, trace)
 			ret, err := interpreter.Run(contract, input, readOnly, trace)
-			if err.Error() == "empty call code" {
+			if err != nil && err.Error() == "empty call code" {
 				trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
 				err = nil // since empty call code is not considered exception in EVM, we agree with its behaviour
 			}
