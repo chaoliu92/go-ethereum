@@ -18,6 +18,7 @@ package vm
 
 import (
 	"github.com/ethereum/go-ethereum/experiment"
+	"github.com/pkg/errors"
 	"math/big"
 	"sync/atomic"
 	"time"
@@ -62,7 +63,13 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool, trace *exper
 				}(evm.interpreter)
 				evm.interpreter = interpreter
 			}
-			return interpreter.Run(contract, input, readOnly, trace)
+			//return interpreter.Run(contract, input, readOnly, trace)
+			ret, err := interpreter.Run(contract, input, readOnly, trace)
+			if err.Error() == "empty call code" {
+				trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
+				err = nil // since empty call code is not considered exception in EVM, we agree with its behaviour
+			}
+			return ret, err
 		}
 	}
 	return nil, ErrNoCompatibleInterpreter
@@ -221,8 +228,9 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 				evm.vmConfig.Tracer.CaptureStart(caller.Address(), addr, false, input, gas, value)
 				evm.vmConfig.Tracer.CaptureEnd(ret, 0, 0, nil)
 			}
+			// mark transaction as exceptional
+			trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
 			return nil, gas, nil // empty call code
-			//return nil, gas, errors.New("empty call code") // empty call code
 		}
 		evm.StateDB.CreateAccount(addr)
 	}

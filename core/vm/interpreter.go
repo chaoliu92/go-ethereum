@@ -17,6 +17,7 @@
 package vm
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/experiment"
 	"github.com/mongodb/mongo-go-driver/mongo"
@@ -171,9 +172,8 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, t
 
 	// Don't bother with the execution if there's no code.
 	if len(contract.Code) == 0 { // This includes where contract has no call code (i.e. contract.Code = nil)
-		//trace.Steps = nil
-		return nil, nil // Commented to add a new error type
-		//return nil, errors.New("empty call code") // Call a contract with empty code
+		//return nil, nil // Commented to add a new error type
+		return nil, errors.New("empty call code") // Call a contract with empty code
 	}
 
 	var (

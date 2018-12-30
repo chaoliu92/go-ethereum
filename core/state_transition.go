@@ -222,10 +222,6 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		st.evm.TxRecord.StatusCode = 1 // external transaction runs well (no exception)
 		trace.StatusCode = 1
 	}
-	//// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
-	//if vmerr.ErrorMsg() == "empty call code" {
-	//	vmerr = nil
-	//}
 
 	if vmerr != nil {
 		log.Debug("VM returned with error", "err", vmerr)
