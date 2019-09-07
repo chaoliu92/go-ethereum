@@ -700,13 +700,20 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memor
 	}
 
 	contract.UseGas(gas)
-	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	var trace *experiment.Trace
+	if interpreter.evm.TxRecord != nil {
+		trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	}
+
 	res, addr, returnGas, suberr := interpreter.evm.Create(contract, input, gas, value, trace)
-	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
-	if trace.ErrorCode != 0 {
-		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
-	} else {
-		trace.StatusCode = 1 // set status code to 1 if no exception occured
+
+	if trace != nil {
+		trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
+		if trace.ErrorCode != 0 {
+			interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+		} else {
+			trace.StatusCode = 1 // set status code to 1 if no exception occured
+		}
 	}
 	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
 	//if suberr.ErrorMsg() == "empty call code" {
@@ -745,13 +752,21 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memo
 	// Apply EIP150
 	gas -= gas / 64
 	contract.UseGas(gas)
-	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+
+	var trace *experiment.Trace
+	if interpreter.evm.TxRecord != nil {
+		trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	}
+
 	res, addr, returnGas, suberr := interpreter.evm.Create2(contract, input, gas, endowment, salt, trace)
-	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
-	if trace.ErrorCode != 0 {
-		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
-	} else {
-		trace.StatusCode = 1 // set status code to 1 if no exception occured
+
+	if trace != nil {
+		trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(suberr) // Check type of exception
+		if trace.ErrorCode != 0 {
+			interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+		} else {
+			trace.StatusCode = 1 // set status code to 1 if no exception occured
+		}
 	}
 	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
 	//if suberr.ErrorMsg() == "empty call code" {
@@ -787,13 +802,20 @@ func opCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, memory 
 	if value.Sign() != 0 {
 		gas += params.CallStipend
 	}
-	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+
+	var trace *experiment.Trace
+	if interpreter.evm.TxRecord != nil {
+		trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	}
+
 	ret, returnGas, err := interpreter.evm.Call(contract, toAddr, args, gas, value, trace)
-	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
-	if trace.ErrorCode != 0 {
-		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
-	} else {
-		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	if trace != nil {
+		trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+		if trace.ErrorCode != 0 {
+			interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+		} else {
+			trace.StatusCode = 1 // set status code to 1 if no exception occured
+		}
 	}
 	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
 	//if err.ErrorMsg() == "empty call code" {
@@ -828,13 +850,20 @@ func opCallCode(pc *uint64, interpreter *EVMInterpreter, contract *Contract, mem
 	if value.Sign() != 0 {
 		gas += params.CallStipend
 	}
-	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+
+	var trace *experiment.Trace
+	if interpreter.evm.TxRecord != nil {
+		trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	}
+
 	ret, returnGas, err := interpreter.evm.CallCode(contract, toAddr, args, gas, value, trace)
-	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
-	if trace.ErrorCode != 0 {
-		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
-	} else {
-		trace.StatusCode = 1 // set status code to 1 if no exception occured
+	if trace != nil {
+		trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+		if trace.ErrorCode != 0 {
+			interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+		} else {
+			trace.StatusCode = 1 // set status code to 1 if no exception occured
+		}
 	}
 	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
 	//if err.ErrorMsg() == "empty call code" {
@@ -865,13 +894,20 @@ func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract,
 	// Get arguments from the memory.
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
-	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	var trace *experiment.Trace
+	if interpreter.evm.TxRecord != nil {
+		trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	}
+
 	ret, returnGas, err := interpreter.evm.DelegateCall(contract, toAddr, args, gas, trace)
-	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
-	if trace.ErrorCode != 0 {
-		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
-	} else {
-		trace.StatusCode = 1 // set status code to 1 if no exception occured
+
+	if trace != nil {
+		trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+		if trace.ErrorCode != 0 {
+			interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+		} else {
+			trace.StatusCode = 1 // set status code to 1 if no exception occured
+		}
 	}
 	// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
 	//if err.ErrorMsg() == "empty call code" {
@@ -902,13 +938,20 @@ func opStaticCall(pc *uint64, interpreter *EVMInterpreter, contract *Contract, m
 	// Get arguments from the memory.
 	args := memory.Get(inOffset.Int64(), inSize.Int64())
 
-	trace := interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	var trace *experiment.Trace
+	if interpreter.evm.TxRecord != nil {
+		trace = interpreter.evm.TxRecord.NewTrace() // New trace entry (for exception experiment use)
+	}
+
 	ret, returnGas, err := interpreter.evm.StaticCall(contract, toAddr, args, gas, trace)
-	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
-	if trace.ErrorCode != 0 {
-		interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
-	} else {
-		trace.StatusCode = 1 // set status code to 1 if no exception occured
+
+	if trace != nil {
+		trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(err) // Check type of exception
+		if trace.ErrorCode != 0 {
+			interpreter.evm.TxRecord.HasException = true // Mark this transaction as exceptional
+		} else {
+			trace.StatusCode = 1 // set status code to 1 if no exception occured
+		}
 	}
 	//// Since we added a new exception kind, must reset its effect in case not changing EVM control flow
 	//if err.ErrorMsg() == "empty call code" {

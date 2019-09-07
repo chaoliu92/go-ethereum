@@ -69,7 +69,9 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool, trace *exper
 			//return interpreter.Run(contract, input, readOnly, trace)
 			ret, err := interpreter.Run(contract, input, readOnly, trace)
 			if err != nil && err.Error() == "empty call code" {
-				trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
+				if trace != nil {
+					trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
+				}
 				err = nil // since empty call code is not considered exception in EVM, we agree with its behaviour
 			}
 			return ret, err
@@ -240,7 +242,9 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 				evm.vmConfig.Tracer.CaptureEnd(ret, 0, 0, nil)
 			}
 			// mark transaction as exceptional
-			trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
+			if trace != nil {
+				trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(errors.New("empty call code"))
+			}
 			return nil, gas, nil // empty call code
 		}
 		evm.StateDB.CreateAccount(addr)
@@ -274,7 +278,9 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 		}
 	}
 
-	trace.GasLeft = uint32(contract.Gas)
+	if trace != nil {
+		trace.GasLeft = uint32(contract.Gas)
+	}
 	return ret, contract.Gas, err
 }
 
@@ -326,7 +332,9 @@ func (evm *EVM) CallCode(caller ContractRef, addr common.Address, input []byte, 
 		}
 	}
 
-	trace.GasLeft = uint32(contract.Gas)
+	if trace != nil {
+		trace.GasLeft = uint32(contract.Gas)
+	}
 	return ret, contract.Gas, err
 }
 
@@ -370,7 +378,9 @@ func (evm *EVM) DelegateCall(caller ContractRef, addr common.Address, input []by
 		}
 	}
 
-	trace.GasLeft = uint32(contract.Gas)
+	if trace != nil {
+		trace.GasLeft = uint32(contract.Gas)
+	}
 	return ret, contract.Gas, err
 }
 
@@ -421,7 +431,9 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 		}
 	}
 
-	trace.GasLeft = uint32(contract.Gas)
+	if trace != nil {
+		trace.GasLeft = uint32(contract.Gas)
+	}
 	return ret, contract.Gas, err
 }
 
@@ -521,7 +533,9 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		evm.vmConfig.Tracer.CaptureEnd(ret, gas-contract.Gas, time.Since(start), err)
 	}
 
-	trace.GasLeft = uint32(contract.Gas)
+	if trace != nil {
+		trace.GasLeft = uint32(contract.Gas)
+	}
 	return ret, address, contract.Gas, err
 
 }
