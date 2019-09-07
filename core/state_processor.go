@@ -17,6 +17,8 @@
 package core
 
 import (
+	context2 "context"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc"
@@ -24,7 +26,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/experiment"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
+	"os"
 )
 
 // StateProcessor is a basic Processor, which takes care of transitioning
@@ -95,6 +100,23 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	// Create a new environment which holds all relevant information
 	// about the transaction and calling mechanisms.
 	vmenv := vm.NewEVM(context, statedb, config, cfg)
+
+	// Set some metadata about the transaction
+	vmenv.TxRecord = experiment.NewTxRecord() // create a new record
+	vmenv.TxRecord.BlockNum = uint32(context.BlockNumber.Uint64())
+	vmenv.TxRecord.TxIndex = uint16(statedb.GetTxIndex() + 1)
+	vmenv.TxRecord.Nonce = tx.Nonce()
+	vmenv.TxRecord.TxHash = tx.Hash().String()
+	vmenv.TxRecord.From = msg.From().String()
+	if msg.To() == nil {
+		vmenv.TxRecord.To = ""
+	} else {
+		vmenv.TxRecord.To = msg.To().String()
+	}
+	vmenv.TxRecord.Value = tx.Value().String()
+	vmenv.TxRecord.GasLimit = uint32(tx.Gas())
+	vmenv.TxRecord.GasPrice = tx.GasPrice().String()
+
 	// Apply the transaction to the current state (included in the env)
 	_, gas, failed, err := ApplyMessage(vmenv, msg, gp)
 	if err != nil {
@@ -124,6 +146,22 @@ func ApplyTransaction(config *params.ChainConfig, bc ChainContext, author *commo
 	receipt.BlockHash = statedb.BlockHash()
 	receipt.BlockNumber = header.Number
 	receipt.TransactionIndex = uint(statedb.TxIndex())
+
+	vmenv.TxRecord.GasUsed = uint32(gas)
+
+	// Write transaction records to database
+	if vmenv.TxRecord.HasException {
+		if _, err := cfg.TxColl.InsertOne(context2.Background(), *vmenv.TxRecord); err != nil {
+			log.Error(fmt.Sprintf("MongoDB error, %s", err.Error()))
+			log.Error(string(vmenv.TxRecord.BlockNum))
+			fmt.Println(vmenv.TxRecord)
+			os.Exit(1)
+		}
+	}
+
+	// For garbage collection
+	vmenv.TxRecord.ReleaseInternal()
+	vmenv.TxRecord = nil
 
 	return receipt, gas, err
 }

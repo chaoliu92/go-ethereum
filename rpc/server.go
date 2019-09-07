@@ -96,7 +96,7 @@ func (s *Server) serveSingleRequest(ctx context.Context, codec ServerCodec) {
 	if atomic.LoadInt32(&s.run) == 0 {
 		return
 	}
-
+	
 	h := newHandler(ctx, codec, s.idgen, &s.services)
 	h.allowSubscribe = false
 	defer h.close(io.EOF, nil)

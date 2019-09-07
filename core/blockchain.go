@@ -20,6 +20,7 @@ package core
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
 	"io"
 	"math/big"
 	mrand "math/rand"
@@ -2030,6 +2031,9 @@ func (bc *BlockChain) update() {
 		case <-futureTimer.C:
 			bc.procFutureBlocks()
 		case <-bc.quit:
+			if bc.vmConfig.TxColl != nil {
+				experiment.CloseConnection(bc.vmConfig.TxColl) // Close database connection
+			}
 			return
 		}
 	}
@@ -2070,7 +2074,7 @@ Number: %v
 Hash: 0x%x
 %v
 
-Error: %v
+ErrorMsg: %v
 ##############################
 `, bc.chainConfig, block.Number(), block.Hash(), receiptString, err))
 }

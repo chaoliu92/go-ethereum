@@ -679,6 +679,11 @@ func (self *StateDB) Prepare(thash, bhash common.Hash, ti int) {
 	self.txIndex = ti
 }
 
+// Added so we can get transaction index for exception record
+func (s *StateDB) GetTxIndex() uint64 {
+	return uint64(s.txIndex)
+}
+
 func (s *StateDB) clearJournalAndRefund() {
 	s.journal = newJournal()
 	s.validRevisions = s.validRevisions[:0]

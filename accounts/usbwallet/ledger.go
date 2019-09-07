@@ -84,7 +84,7 @@ func newLedgerDriver(logger log.Logger) driver {
 	}
 }
 
-// Status implements usbwallet.driver, returning various states the Ledger can
+// StatusCode implements usbwallet.driver, returning various states the Ledger can
 // currently be in.
 func (w *ledgerDriver) Status() (string, error) {
 	if w.failure != nil {

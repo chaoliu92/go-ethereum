@@ -244,7 +244,7 @@ func (ethash *Ethash) remote(notify []string, noverify bool) {
 		currentWork[2] = common.BytesToHash(new(big.Int).Div(two256, block.Difficulty()).Bytes()).Hex()
 		currentWork[3] = hexutil.EncodeBig(block.Number())
 
-		// Trace the seal work fetched by remote sealer.
+		// Steps the seal work fetched by remote sealer.
 		currentBlock = block
 		works[hash] = block
 	}
@@ -332,7 +332,7 @@ func (ethash *Ethash) remote(notify []string, noverify bool) {
 			}
 
 		case result := <-ethash.submitRateCh:
-			// Trace remote sealer's hash rate by submitted value.
+			// Steps remote sealer's hash rate by submitted value.
 			rates[result.id] = hashrate{rate: result.rate, ping: time.Now()}
 			close(result.done)
 

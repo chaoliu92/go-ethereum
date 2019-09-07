@@ -119,7 +119,7 @@ func TestSimulation(t *testing.T) {
 	// check if each node have received and decrypted exactly one message
 	checkPropagation(t, true)
 
-	// check if Status message was correctly decoded
+	// check if StatusCode message was correctly decoded
 	checkBloomFilterExchange(t)
 	checkPowExchange(t)
 

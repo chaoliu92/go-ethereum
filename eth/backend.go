@@ -20,6 +20,7 @@ package eth
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
 	"math/big"
 	"runtime"
 	"sync"
@@ -172,11 +173,17 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 			rawdb.WriteDatabaseVersion(chainDb, core.BlockChainVersion)
 		}
 	}
+	// Setup mongodb connections (collections and GridFS)
+	collTx, err := experiment.Collections()
+	if err != nil {
+		return nil, err
+	}
 	var (
 		vmConfig = vm.Config{
 			EnablePreimageRecording: config.EnablePreimageRecording,
 			EWASMInterpreter:        config.EWASMInterpreter,
 			EVMInterpreter:          config.EVMInterpreter,
+			TxColl:                  collTx,      // MongoDB collection for transaction records
 		}
 		cacheConfig = &core.CacheConfig{
 			TrieCleanLimit:      config.TrieCleanCache,
@@ -250,6 +257,9 @@ func CreateConsensusEngine(ctx *node.ServiceContext, chainConfig *params.ChainCo
 	}
 	// Otherwise assume proof-of-work
 	switch config.PowMode {
+	case ethash.ModeFullFake: // add for full FakePoW in regular sync
+		log.Warn("Ethash used in full fake mode")
+		return ethash.NewFullFaker()
 	case ethash.ModeFake:
 		log.Warn("Ethash used in fake mode")
 		return ethash.NewFaker()

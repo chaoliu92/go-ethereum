@@ -17,7 +17,10 @@
 package vm
 
 import (
+	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/experiment"
+	"github.com/mongodb/mongo-go-driver/mongo"
 	"hash"
 	"sync/atomic"
 
@@ -39,6 +42,7 @@ type Config struct {
 	EVMInterpreter   string // External EVM interpreter options
 
 	ExtraEips []int // Additional EIPS that are to be enabled
+	TxColl *mongo.Collection  // Database collection (for MongoDB) to write exception records
 }
 
 // Interpreter is used to run Ethereum based contracts and will utilise the
@@ -48,7 +52,7 @@ type Config struct {
 type Interpreter interface {
 	// Run loops and evaluates the contract's code with the given input data and returns
 	// the return byte-slice and an error if one occurred.
-	Run(contract *Contract, input []byte, static bool) ([]byte, error)
+	Run(contract *Contract, input []byte, static bool, trace *experiment.Trace) ([]byte, error)
 	// CanRun tells if the contract, passed as an argument, can be
 	// run by the current interpreter. This is meant so that the
 	// caller can do something like:
@@ -130,7 +134,7 @@ func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
 // It's important to note that any errors returned by the interpreter should be
 // considered a revert-and-consume-all-gas operation except for
 // errExecutionReverted which means revert-and-keep-gas-left.
-func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
+func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool, trace *experiment.Trace) (ret []byte, err error) {
 	if in.intPool == nil {
 		in.intPool = poolOfIntPools.get()
 		defer func() {
@@ -155,8 +159,9 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 	in.returnData = nil
 
 	// Don't bother with the execution if there's no code.
-	if len(contract.Code) == 0 {
-		return nil, nil
+	if len(contract.Code) == 0 { // This includes where contract has no call code (i.e. contract.Code = nil)
+		//return nil, nil // Commented to add a new error type
+		return nil, errors.New("empty call code") // Call a contract with empty code
 	}
 
 	var (
@@ -204,8 +209,13 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// enough stack items available to perform the operation.
 		op = contract.GetOp(pc)
 		operation := in.cfg.JumpTable[op]
+		if trace != nil {
+			// Record trace step for exception experiment use
+			in.evm.TxRecord.NumSteps += 1 // A new execution step for this transaction
+		}
+
 		if !operation.valid {
-			return nil, fmt.Errorf("invalid opcode 0x%x", int(op))
+			return nil, fmt.Errorf("invalid opcode 0x%x", int(op)) // invalid instruction
 		}
 		// Validate stack
 		if sLen := stack.len(); sLen < operation.minStack {
@@ -238,12 +248,12 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		if operation.memorySize != nil {
 			memSize, overflow := operation.memorySize(stack)
 			if overflow {
-				return nil, errGasUintOverflow
+				return nil, errGasUintOverflow // gas uint overflow due to huge active memory size
 			}
 			// memory is expanded in words of 32 bytes. Gas
 			// is also calculated in words.
 			if memorySize, overflow = math.SafeMul(toWordSize(memSize), 32); overflow {
-				return nil, errGasUintOverflow
+				return nil, errGasUintOverflow // gas uint overflow due to huge active memory size
 			}
 		}
 		// Dynamic portion of gas
@@ -281,7 +291,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 
 		switch {
 		case err != nil:
-			return nil, err
+			return nil, err // invalid jump destination, return data bound exceed
 		case operation.reverts:
 			return res, errExecutionReverted
 		case operation.halts:

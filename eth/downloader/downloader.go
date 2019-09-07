@@ -123,7 +123,7 @@ type Downloader struct {
 	// Callbacks
 	dropPeer peerDropFn // Drops a peer for misbehaving
 
-	// Status
+	// StatusCode
 	synchroniseMock func(id string, hash common.Hash) error // Replacement for synchronise during testing
 	synchronising   int32
 	notified        int32

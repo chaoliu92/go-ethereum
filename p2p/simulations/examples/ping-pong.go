@@ -41,7 +41,7 @@ var adapterType = flag.String("adapter", "sim", `node adapter to use (one of "si
 func main() {
 	flag.Parse()
 
-	// set the log level to Trace
+	// set the log level to Steps
 	log.Root().SetHandler(log.LvlFilterHandler(log.LvlTrace, log.StreamHandler(os.Stderr, log.TerminalFormat(false))))
 
 	// register a single ping-pong service

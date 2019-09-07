@@ -44,7 +44,7 @@ const selfDeriveThrottling = time.Second
 // driver defines the vendor specific functionality hardware wallets instances
 // must implement to allow using them with the wallet lifecycle management.
 type driver interface {
-	// Status returns a textual status to aid the user in the current state of the
+	// StatusCode returns a textual status to aid the user in the current state of the
 	// wallet. It also returns an error indicating any failure the wallet might have
 	// encountered.
 	Status() (string, error)
@@ -121,7 +121,7 @@ func (w *wallet) URL() accounts.URL {
 	return *w.url // Immutable, no need for a lock
 }
 
-// Status implements accounts.Wallet, returning a custom status message from the
+// StatusCode implements accounts.Wallet, returning a custom status message from the
 // underlying vendor-specific hardware wallet implementation.
 func (w *wallet) Status() (string, error) {
 	w.stateLock.RLock() // No device communication, state lock is enough

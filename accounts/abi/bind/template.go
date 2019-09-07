@@ -366,7 +366,7 @@ var (
 		}
 		// Next advances the iterator to the subsequent event, returning whether there
 		// are any more events found. In case of a retrieval or parsing error, false is
-		// returned and Error() can be queried for the exact failure.
+		// returned and ErrorMsg() can be queried for the exact failure.
 		func (it *{{$contract.Type}}{{.Normalized.Name}}Iterator) Next() bool {
 			// If the iterator failed, stop iterating
 			if (it.fail != nil) {
@@ -405,8 +405,8 @@ var (
 				return it.Next()
 			}
 		}
-		// Error returns any retrieval or parsing error occurred during filtering.
-		func (it *{{$contract.Type}}{{.Normalized.Name}}Iterator) Error() error {
+		// ErrorMsg returns any retrieval or parsing error occurred during filtering.
+		func (it *{{$contract.Type}}{{.Normalized.Name}}Iterator) ErrorMsg() error {
 			return it.fail
 		}
 		// Close terminates the iteration process, releasing any pending underlying

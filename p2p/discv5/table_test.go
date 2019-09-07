@@ -58,13 +58,13 @@ func (nullTransport) Close()                                                {}
 //
 // 		// first ping goes to sender (bonding pingback)
 // 		if !transport.pinged[pingSender.ID] {
-// 			t.Error("table did not ping back sender")
+// 			t.ErrorMsg("table did not ping back sender")
 // 		}
 // 		if newNodeIsResponding {
 // 			// second ping goes to oldest node in bucket
 // 			// to see whether it is still alive.
 // 			if !transport.pinged[last.ID] {
-// 				t.Error("table did not ping last node in bucket")
+// 				t.ErrorMsg("table did not ping last node in bucket")
 // 			}
 // 		}
 //
@@ -76,17 +76,17 @@ func (nullTransport) Close()                                                {}
 //
 // 		if lastInBucketIsResponding || !newNodeIsResponding {
 // 			if !contains(tab.buckets[253].entries, last.ID) {
-// 				t.Error("last entry was removed")
+// 				t.ErrorMsg("last entry was removed")
 // 			}
 // 			if contains(tab.buckets[253].entries, pingSender.ID) {
-// 				t.Error("new entry was added")
+// 				t.ErrorMsg("new entry was added")
 // 			}
 // 		} else {
 // 			if contains(tab.buckets[253].entries, last.ID) {
-// 				t.Error("last entry was not removed")
+// 				t.ErrorMsg("last entry was not removed")
 // 			}
 // 			if !contains(tab.buckets[253].entries, pingSender.ID) {
-// 				t.Error("new entry was not added")
+// 				t.ErrorMsg("new entry was not added")
 // 			}
 // 		}
 // 	}

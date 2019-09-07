@@ -82,7 +82,7 @@ Here's an example handler that prints logfmt output to Stdout:
     handler := log.StreamHandler(os.Stdout, log.LogfmtFormat())
 
 Here's an example handler that defers to two other handlers. One handler only prints records
-from the rpc package in logfmt to standard out. The other prints records at Error level
+from the rpc package in logfmt to standard out. The other prints records at ErrorMsg level
 or above in JSON formatted output to the file /var/log/service.json
 
     handler := log.MultiHandler(
@@ -100,7 +100,7 @@ the context.
     h := log.CallerFileHandler(log.StdoutHandler)
     log.Root().SetHandler(h)
     ...
-    log.Error("open file", "err", err)
+    log.ErrorMsg("open file", "err", err)
 
 This will output a line that looks like:
 
@@ -111,7 +111,7 @@ Here's an example that logs the call stack rather than just the call site.
     h := log.CallerStackHandler("%+v", log.StdoutHandler)
     log.Root().SetHandler(h)
     ...
-    log.Error("open file", "err", err)
+    log.ErrorMsg("open file", "err", err)
 
 This will output a line that looks like:
 
@@ -161,7 +161,7 @@ filters it out. Just wrap any function which takes no arguments with the log.Laz
 
     log.Debug("factors", log.Lazy{factorRSAKey})
 
-If this message is not logged for any reason (like logging at the Error level), then
+If this message is not logged for any reason (like logging at the ErrorMsg level), then
 factorRSAKey is never evaluated.
 
 Dynamic context values
@@ -198,7 +198,7 @@ handler for it (which is log.StdoutHandler) to use TerminalFormat. This format
 logs records nicely for your terminal, including color-coded output based
 on log level.
 
-Error Handling
+ErrorMsg Handling
 
 Becasuse log15 allows you to step around the type system, there are a few ways you can specify
 invalid arguments to the logging functions. You could, for example, wrap something that is not

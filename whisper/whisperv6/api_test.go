@@ -27,7 +27,7 @@ func TestMultipleTopicCopyInNewMessageFilter(t *testing.T) {
 
 	keyID, err := w.GenerateSymKey()
 	if err != nil {
-		t.Fatalf("Error generating symmetric key: %v", err)
+		t.Fatalf("ErrorMsg generating symmetric key: %v", err)
 	}
 	api := PublicWhisperAPI{
 		w:        w,
@@ -44,7 +44,7 @@ func TestMultipleTopicCopyInNewMessageFilter(t *testing.T) {
 
 	_, err = api.NewMessageFilter(crit)
 	if err != nil {
-		t.Fatalf("Error creating the filter: %v", err)
+		t.Fatalf("ErrorMsg creating the filter: %v", err)
 	}
 
 	found := false

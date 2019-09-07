@@ -69,7 +69,7 @@ func main() {
 		r = fd
 
 	default:
-		fmt.Fprintln(os.Stderr, "Error: too many arguments")
+		fmt.Fprintln(os.Stderr, "ErrorMsg: too many arguments")
 		flag.Usage()
 		os.Exit(2)
 	}

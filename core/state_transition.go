@@ -18,6 +18,7 @@ package core
 
 import (
 	"errors"
+	"github.com/ethereum/go-ethereum/experiment"
 	"math"
 	"math/big"
 
@@ -209,14 +210,24 @@ func (st *StateTransition) TransitionDb() (ret []byte, usedGas uint64, failed bo
 		// not assigned to err, except for insufficient balance
 		// error.
 		vmerr error
+		trace = st.evm.TxRecord.NewTrace() // New trace entry (call stack depth = 1)
 	)
 	if contractCreation {
-		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value)
+		ret, _, st.gas, vmerr = evm.Create(sender, st.data, st.gas, st.value, trace)
 	} else {
 		// Increment the nonce for the next transaction
 		st.state.SetNonce(msg.From(), st.state.GetNonce(sender.Address())+1)
-		ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value)
+		ret, st.gas, vmerr = evm.Call(sender, st.to(), st.data, st.gas, st.value, trace)
 	}
+
+	trace.ErrorMsg, trace.ErrorCode = experiment.CheckException(vmerr) // Check type of exception
+	if trace.ErrorCode != 0 { // in case of any exception
+		st.evm.TxRecord.HasException = true // mark this (external) transaction as exceptional
+	} else {
+		st.evm.TxRecord.StatusCode = 1 // external transaction runs well (no exception)
+		trace.StatusCode = 1
+	}
+
 	if vmerr != nil {
 		log.Debug("VM returned with error", "err", vmerr)
 		// The only possible consensus-error would be if there wasn't

@@ -429,7 +429,7 @@ func TestPaddingAppendedToSymMessagesWithSignature(t *testing.T) {
 	pSrc, err := crypto.GenerateKey()
 
 	if err != nil {
-		t.Fatalf("Error creating the signature key %v", err)
+		t.Fatalf("ErrorMsg creating the signature key %v", err)
 		return
 	}
 	params.Src = pSrc
@@ -444,7 +444,7 @@ func TestPaddingAppendedToSymMessagesWithSignature(t *testing.T) {
 	err = msg.appendPadding(params)
 
 	if err != nil {
-		t.Fatalf("Error appending padding to message %v", err)
+		t.Fatalf("ErrorMsg appending padding to message %v", err)
 		return
 	}
 

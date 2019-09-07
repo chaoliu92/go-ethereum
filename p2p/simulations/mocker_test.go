@@ -59,14 +59,14 @@ func TestMocker(t *testing.T) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		t.Fatalf("Invalid Status Code received, expected 200, got %d", resp.StatusCode)
+		t.Fatalf("Invalid StatusCode Code received, expected 200, got %d", resp.StatusCode)
 	}
 
 	//check the list is at least 1 in size
 	var mockerlist []string
 	err = json.NewDecoder(resp.Body).Decode(&mockerlist)
 	if err != nil {
-		t.Fatalf("Error decoding JSON mockerlist: %s", err)
+		t.Fatalf("ErrorMsg decoding JSON mockerlist: %s", err)
 	}
 
 	if len(mockerlist) < 1 {
@@ -126,7 +126,7 @@ func TestMocker(t *testing.T) {
 		t.Fatalf("Could not start mocker: %s", err)
 	}
 	if resp.StatusCode != 200 {
-		t.Fatalf("Invalid Status Code received for starting mocker, expected 200, got %d", resp.StatusCode)
+		t.Fatalf("Invalid StatusCode Code received for starting mocker, expected 200, got %d", resp.StatusCode)
 	}
 
 	wg.Wait()
@@ -147,7 +147,7 @@ func TestMocker(t *testing.T) {
 		t.Fatalf("Could not stop mocker: %s", err)
 	}
 	if resp.StatusCode != 200 {
-		t.Fatalf("Invalid Status Code received for stopping mocker, expected 200, got %d", resp.StatusCode)
+		t.Fatalf("Invalid StatusCode Code received for stopping mocker, expected 200, got %d", resp.StatusCode)
 	}
 
 	//reset the network

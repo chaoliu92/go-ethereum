@@ -500,7 +500,7 @@ func makeOptionalPtrDecoder(typ reflect.Type) (decoder, error) {
 	dec := func(s *Stream, val reflect.Value) (err error) {
 		kind, size, err := s.Kind()
 		if err != nil || size == 0 && kind != Byte {
-			// rearm s.Kind. This is important because the input
+			// rearm s.ErrorCode. This is important because the input
 			// position must advance to the next value even though
 			// we don't read anything.
 			s.kind = -1
@@ -563,7 +563,7 @@ func decodeDecoder(s *Stream, val reflect.Value) error {
 	return val.Interface().(Decoder).DecodeRLP(s)
 }
 
-// Kind represents the kind of value contained in an RLP stream.
+// ErrorCode represents the kind of value contained in an RLP stream.
 type Kind int
 
 const (
@@ -666,7 +666,7 @@ func (s *Stream) Bytes() ([]byte, error) {
 	}
 	switch kind {
 	case Byte:
-		s.kind = -1 // rearm Kind
+		s.kind = -1 // rearm ErrorCode
 		return []byte{s.byteval}, nil
 	case String:
 		b := make([]byte, size)
@@ -689,7 +689,7 @@ func (s *Stream) Raw() ([]byte, error) {
 		return nil, err
 	}
 	if kind == Byte {
-		s.kind = -1 // rearm Kind
+		s.kind = -1 // rearm ErrorCode
 		return []byte{s.byteval}, nil
 	}
 	// the original header has already been read and is no longer
@@ -724,7 +724,7 @@ func (s *Stream) uint(maxbits int) (uint64, error) {
 		if s.byteval == 0 {
 			return 0, ErrCanonInt
 		}
-		s.kind = -1 // rearm Kind
+		s.kind = -1 // rearm ErrorCode
 		return uint64(s.byteval), nil
 	case String:
 		if size > uint64(maxbits/8) {
@@ -870,16 +870,16 @@ func (s *Stream) Reset(r io.Reader, inputLimit uint64) {
 	s.byteval = 0
 }
 
-// Kind returns the kind and size of the next value in the
+// ErrorCode returns the kind and size of the next value in the
 // input stream.
 //
 // The returned size is the number of bytes that make up the value.
 // For kind == Byte, the size is zero because the value is
 // contained in the type tag.
 //
-// The first call to Kind will read size information from the input
+// The first call to ErrorCode will read size information from the input
 // reader and leave it positioned at the start of the actual bytes of
-// the value. Subsequent calls to Kind (until the value is decoded)
+// the value. Subsequent calls to ErrorCode (until the value is decoded)
 // will not advance the input reader and return cached information.
 func (s *Stream) Kind() (kind Kind, size uint64, err error) {
 	var tos *listpos
@@ -979,7 +979,7 @@ func (s *Stream) readKind() (kind Kind, size uint64, err error) {
 func (s *Stream) readUint(size byte) (uint64, error) {
 	switch size {
 	case 0:
-		s.kind = -1 // rearm Kind
+		s.kind = -1 // rearm ErrorCode
 		return 0, nil
 	case 1:
 		b, err := s.readByte()
@@ -1029,7 +1029,7 @@ func (s *Stream) readByte() (byte, error) {
 }
 
 func (s *Stream) willRead(n uint64) error {
-	s.kind = -1 // rearm Kind
+	s.kind = -1 // rearm ErrorCode
 
 	if len(s.stack) > 0 {
 		// check list overflow

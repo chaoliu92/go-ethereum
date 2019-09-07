@@ -47,7 +47,7 @@ func (ui *StdIOUI) RegisterUIServer(api *UIServerAPI) {
 func (ui *StdIOUI) dispatch(serviceMethod string, args interface{}, reply interface{}) error {
 	err := ui.client.Call(&reply, serviceMethod, args)
 	if err != nil {
-		log.Info("Error", "exc", err.Error())
+		log.Info("ErrorMsg", "exc", err.Error())
 	}
 	return err
 }

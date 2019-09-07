@@ -534,7 +534,7 @@ func (s *MatcherSession) Close() {
 	})
 }
 
-// Error returns any failure encountered during the matching session.
+// ErrorMsg returns any failure encountered during the matching session.
 func (s *MatcherSession) Error() error {
 	if err := s.err.Load(); err != nil {
 		return err.(error)

@@ -71,8 +71,8 @@ type StdTraceConfig struct {
 
 // txTraceResult is the result of a single transaction trace.
 type txTraceResult struct {
-	Result interface{} `json:"result,omitempty"` // Trace results produced by the tracer
-	Error  string      `json:"error,omitempty"`  // Trace failure produced by the tracer
+	Result interface{} `json:"result,omitempty"` // Steps results produced by the tracer
+	Error  string      `json:"error,omitempty"`  // Steps failure produced by the tracer
 }
 
 // blockTraceTask represents a single block trace task when an entire chain is
@@ -81,7 +81,7 @@ type blockTraceTask struct {
 	statedb *state.StateDB   // Intermediate state prepped for tracing
 	block   *types.Block     // Block to trace the transactions from
 	rootref common.Hash      // Trie root reference held for this task
-	results []*txTraceResult // Trace results procudes by the task
+	results []*txTraceResult // Steps results procudes by the task
 }
 
 // blockTraceResult represets the results of tracing a single block when an entire
@@ -89,7 +89,7 @@ type blockTraceTask struct {
 type blockTraceResult struct {
 	Block  hexutil.Uint64   `json:"block"`  // Block number corresponding to this trace
 	Hash   common.Hash      `json:"hash"`   // Block hash corresponding to this trace
-	Traces []*txTraceResult `json:"traces"` // Trace results produced by the task
+	Traces []*txTraceResult `json:"traces"` // Steps results produced by the task
 }
 
 // txTraceTask represents a single transaction trace task when an entire block
@@ -121,7 +121,7 @@ func (api *PrivateDebugAPI) TraceChain(ctx context.Context, start, end rpc.Block
 	default:
 		to = api.eth.blockchain.GetBlockByNumber(uint64(end))
 	}
-	// Trace the chain if we've found all our blocks
+	// Steps the chain if we've found all our blocks
 	if from == nil {
 		return nil, fmt.Errorf("starting block #%d not found", start)
 	}
@@ -203,7 +203,7 @@ func (api *PrivateDebugAPI) traceChain(ctx context.Context, start, end *types.Bl
 			for task := range tasks {
 				signer := types.MakeSigner(api.eth.blockchain.Config(), task.block.Number())
 
-				// Trace all the transactions contained within
+				// Steps all the transactions contained within
 				for i, tx := range task.block.Transactions() {
 					msg, _ := tx.AsMessage(signer)
 					vmctx := core.NewEVMContext(msg, task.block.Header(), api.eth.blockchain, nil)
@@ -364,7 +364,7 @@ func (api *PrivateDebugAPI) TraceBlockByNumber(ctx context.Context, number rpc.B
 	default:
 		block = api.eth.blockchain.GetBlockByNumber(uint64(number))
 	}
-	// Trace the block if it was found
+	// Steps the block if it was found
 	if block == nil {
 		return nil, fmt.Errorf("block #%d not found", number)
 	}
@@ -715,7 +715,7 @@ func (api *PrivateDebugAPI) TraceTransaction(ctx context.Context, hash common.Ha
 	if err != nil {
 		return nil, err
 	}
-	// Trace the transaction and return
+	// Steps the transaction and return
 	return api.traceTx(ctx, msg, vmctx, statedb, config)
 }
 

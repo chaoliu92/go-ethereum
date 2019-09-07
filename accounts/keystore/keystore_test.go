@@ -369,7 +369,7 @@ func checkEvents(t *testing.T, want []walletEvent, have []walletEvent) {
 			have = have[1:]
 		}
 		if nmatch == 0 {
-			t.Fatalf("can't find event with Kind=%v for %x", wantEv.Kind, wantEv.a.Address)
+			t.Fatalf("can't find event with ErrorCode=%v for %x", wantEv.Kind, wantEv.a.Address)
 		}
 	}
 }

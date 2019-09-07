@@ -54,7 +54,7 @@ Change the password of a keyfile.`,
 		passphrase := getPassphrase(ctx)
 		key, err := keystore.DecryptKey(keyjson, passphrase)
 		if err != nil {
-			utils.Fatalf("Error decrypting key: %v", err)
+			utils.Fatalf("ErrorMsg decrypting key: %v", err)
 		}
 
 		// Get a new passphrase.
@@ -78,7 +78,7 @@ Change the password of a keyfile.`,
 
 		// Then write the new keyfile in place of the old one.
 		if err := ioutil.WriteFile(keyfilepath, newJson, 600); err != nil {
-			utils.Fatalf("Error writing new keyfile to disk: %v", err)
+			utils.Fatalf("ErrorMsg writing new keyfile to disk: %v", err)
 		}
 
 		// Don't print anything.  Just return successfully,

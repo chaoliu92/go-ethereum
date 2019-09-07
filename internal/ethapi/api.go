@@ -134,7 +134,7 @@ func (s *PublicTxPoolAPI) Content() map[string]map[string]map[string]*RPCTransac
 	return content
 }
 
-// Status returns the number of pending and queued transaction in the pool.
+// StatusCode returns the number of pending and queued transaction in the pool.
 func (s *PublicTxPoolAPI) Status() map[string]hexutil.Uint {
 	pending, queue := s.b.Stats()
 	return map[string]hexutil.Uint{

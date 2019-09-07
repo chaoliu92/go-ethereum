@@ -37,7 +37,7 @@ func (w *keystoreWallet) URL() accounts.URL {
 	return w.account.URL
 }
 
-// Status implements accounts.Wallet, returning whether the account held by the
+// StatusCode implements accounts.Wallet, returning whether the account held by the
 // keystore wallet is unlocked or not.
 func (w *keystoreWallet) Status() (string, error) {
 	w.keystore.mu.RLock()

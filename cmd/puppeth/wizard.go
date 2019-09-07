@@ -240,7 +240,7 @@ func (w *wizard) readFloat() float64 {
 		}
 		val, err := strconv.ParseFloat(strings.TrimSpace(text), 64)
 		if err != nil {
-			log.Error("Invalid input, expected float", "err", err)
+			log.ErrorMsg("Invalid input, expected float", "err", err)
 			continue
 		}
 		return val

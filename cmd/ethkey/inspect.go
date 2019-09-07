@@ -63,7 +63,7 @@ make sure to use this feature with great caution!`,
 		passphrase := getPassphrase(ctx)
 		key, err := keystore.DecryptKey(keyjson, passphrase)
 		if err != nil {
-			utils.Fatalf("Error decrypting key: %v", err)
+			utils.Fatalf("ErrorMsg decrypting key: %v", err)
 		}
 
 		// Output all relevant information we can retrieve.
