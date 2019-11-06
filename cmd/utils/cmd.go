@@ -170,9 +170,10 @@ func ImportChain(chain *core.BlockChain, fn string) error {
 
 func missingBlocks(chain *core.BlockChain, blocks []*types.Block) []*types.Block {
 	head := chain.CurrentBlock()
-	if 5960000 < blocks[0].Number().Uint64() && blocks[0].Number().Uint64() <= 5962500 {  // redo blocks from 5960000, or in batch 2385
-		return blocks
-	}
+	//if 5960000 < blocks[0].Number().Uint64() && blocks[0].Number().Uint64() <= 5962500 {  // redo blocks from 5960000, or in batch 2385
+	//	return blocks
+	//}
+	fmt.Println(blocks[0].Number().Uint64())
 	for i, block := range blocks {
 		//fmt.Println(chain.GetBlock(block.Hash(), block.NumberU64()).Header().Root.Hex() != block.Header().Root.Hex())
 		// If we're behind the chain head, only check block, state is available at head
