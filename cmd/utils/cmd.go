@@ -171,10 +171,10 @@ func ImportChain(chain *core.BlockChain, fn string) error {
 func missingBlocks(chain *core.BlockChain, blocks []*types.Block) []*types.Block {
 	head := chain.CurrentBlock()
 	for i, block := range blocks {
+		fmt.Println(chain.GetBlock(block.Hash(), block.NumberU64()).Header().Root.Hex() != block.Header().Root.Hex())
 		// If we're behind the chain head, only check block, state is available at head
 		if head.NumberU64() > block.NumberU64() {
 			if !chain.HasBlock(block.Hash(), block.NumberU64()) {
-				fmt.Println(chain.GetBlock(block.Hash(), block.NumberU64()).Header().Root.Hex() != block.Header().Root.Hex())
 				return blocks[i:]
 			}
 			continue
